@@ -1,8 +1,5 @@
-console.log("Project-info.js loaded");
-
 document.addEventListener("DOMContentLoaded", () => {
   const sheetURL = 'https://opensheet.elk.sh/1e7n0NgW7swUmn6hqCW2KslFgVd3RJhQRiuVSaIY3A1c/Sheet1';
-  const projectName = document.getElementById('page-title')?.textContent.trim() || '';
   const container = document.getElementById("project-info");
 
   if (!container) {
@@ -10,7 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  console.log("Starting fetch for project:", projectName);
+  const slug = window.location.pathname.replace(/^\/|\/$/g, '').toLowerCase(); // e.g. "3rd-3rd"
+  console.log("Page slug:", slug);
 
   fetch(sheetURL)
     .then(response => {
@@ -22,21 +20,15 @@ document.addEventListener("DOMContentLoaded", () => {
     .then(data => {
       console.log("Data fetched:", data.length, "rows");
 
-      if (!projectName) {
-        console.warn("Project name not specified.");
-        container.innerHTML = "Project name not specified.";
-        return;
-      }
-
-      const project = data.find(p => p["Project Name"] === projectName);
+      const project = data.find(p => (p["Slug"] || '').toLowerCase() === slug);
 
       if (!project) {
-        console.error("Project not found for:", projectName);
+        console.error("Project not found for slug:", slug);
         container.innerHTML = "Project not found.";
         return;
       }
 
-      console.log("Found project data:", project);
+      console.log("Found project:", project);
 
       const status = (project.Status || '').trim();
 
