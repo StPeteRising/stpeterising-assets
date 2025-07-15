@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Prepare Cancelled pill HTML if needed
       const cancelledPillHtml = isCancelled
-        ? `<div class="cancelled-tag">Cancelled</div>`
+        ? `<span class="cancelled-tag">Cancelled</span>`
         : '';
 
       container.innerHTML = `
