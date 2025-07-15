@@ -4,6 +4,7 @@
   border-radius: 12px 12px 0 0;
   font-family: inherit;
   text-align: center;
+  position: relative;
 }
 
 .project-status-label {
@@ -12,28 +13,20 @@
   color: #333;
   text-transform: uppercase;
   margin-bottom: 12px;
-  display: block; /* ensure heading is block for pill below */
 }
 
-/* Cancelled pill styles */
 .cancelled-tag {
-  display: block; /* block so it sits below status heading */
-  margin: 0 auto 12px auto;
-  font-size: 0.75em;
-  font-weight: 700;
+  display: inline-block;
+  background-color: #d32f2f; /* bright red */
   color: #fff;
-  background-color: #e03a3e;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 4px 12px;
   border-radius: 20px;
-  padding: 6px 14px;
+  margin-bottom: 12px;
   user-select: none;
-  width: fit-content;
-  min-width: 90px;
-  text-align: center;
-  position: relative !important;
-  z-index: 10 !important;
 }
 
-/* Progress bar and labels */
 .status-bar-container {
   display: flex;
   border-radius: 30px;
@@ -43,6 +36,7 @@
   max-width: 560px;
   margin: 0 auto 8px;
   box-shadow: inset 0 0 6px rgba(0,0,0,0.1);
+  transition: background-color 0.3s ease;
 }
 
 .status-segment {
@@ -91,7 +85,7 @@
   transition: color 0.3s ease;
 }
 
-/* Project stats */
+/* Project stats container */
 .project-stats {
   display: flex;
   flex-wrap: wrap;
@@ -105,6 +99,7 @@
   justify-content: center;
 }
 
+/* Individual stat blocks */
 .project-stats div.stat-block {
   display: flex;
   flex-direction: column;
@@ -142,7 +137,22 @@
   font-family: inherit;
 }
 
-/* Responsive */
+/* Grey out everything except the red pill when cancelled */
+.cancelled {
+  filter: grayscale(90%) brightness(80%);
+  pointer-events: none;
+  user-select: none;
+  transition: filter 0.3s ease;
+}
+
+/* Make sure the Cancelled pill inside .cancelled is not greyed out */
+.cancelled .cancelled-tag {
+  filter: none !important;
+  pointer-events: auto !important;
+  user-select: auto !important;
+}
+
+/* Responsive adjustments */
 @media (max-width: 480px) {
   .project-stats {
     gap: 16px 20px;
@@ -164,27 +174,4 @@
     line-height: 1.2em;
     text-align: center;
   }
-}
-
-/* Grey out everything except Cancelled pill when cancelled */
-#project-info.cancelled *:not(.cancelled-tag):not(.cancelled-tag *) {
-  opacity: 0.6 !important;
-  pointer-events: none !important;
-}
-
-#project-info.cancelled .status-bar-container,
-#project-info.cancelled .status-steps-labels {
-  opacity: 0.6 !important;
-  pointer-events: none !important;
-}
-
-/* Make Cancelled pill fully vibrant red and visible */
-#project-info.cancelled .cancelled-tag {
-  opacity: 1 !important;
-  color: #fff !important;
-  background-color: #e03a3e !important;
-  pointer-events: auto !important;
-  filter: none !important;
-  position: relative !important;
-  z-index: 10 !important;
 }
