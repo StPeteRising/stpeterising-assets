@@ -15,6 +15,15 @@
   opacity: 0.6;
 }
 
+/* Also grey out all descendants inside the stats blocks */
+.project-status-wrapper.cancelled .project-stats,
+.project-status-wrapper.cancelled .project-stats * {
+  filter: grayscale(90%) brightness(80%);
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.6;
+}
+
 /* Make sure Cancelled pill is always bright red and on its own line */
 .cancelled-tag {
   background-color: #d32f2f !important;
