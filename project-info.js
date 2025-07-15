@@ -1,49 +1,71 @@
 document.addEventListener("DOMContentLoaded", () => {
   const sheetURL = 'https://opensheet.elk.sh/1e7n0NgW7swUmn6hqCW2KslFgVd3RJhQRiuVSaIY3A1c/Sheet1';
-  // Use slug from URL pathname
+  const container = document.getElementById("project-info");
   const slug = window.location.pathname.replace(/^\/|\/$/g, '').toLowerCase();
 
-  const container = document.getElementById("project-info");
   if (!container) {
-    console.error("Missing #project-info container");
+    console.error("Container element with id 'project-info' not found.");
     return;
   }
 
+  console.log("Starting fetch for project slug:", slug);
+
   fetch(sheetURL)
     .then(response => {
-      if (!response.ok) throw new Error(`Network error: ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`Network response was not ok (${response.status})`);
+      }
       return response.json();
     })
     .then(data => {
-      const project = data.find(p => (p.Slug || '').toLowerCase() === slug);
-      if (!project) {
-        container.textContent = "Project not found.";
+      console.log("Data fetched:", data.length, "rows");
+
+      if (!slug) {
+        console.warn("Project slug not specified.");
+        container.innerHTML = "Project slug not specified.";
         return;
       }
 
-      const status = (project.Status || '').trim();
-      const isCancelled = status.toLowerCase() === 'cancelled';
+      // Find project by Slug (case insensitive)
+      const project = data.find(p => (p.Slug || '').toLowerCase() === slug);
 
-      // Build cancelled pill html if needed
-      const cancelledPillHtml = isCancelled
-        ? `<span class="cancelled-tag">Cancelled</span>`
-        : '';
+      if (!project) {
+        console.error("Project not found for slug:", slug);
+        container.innerHTML = "Project not found.";
+        return;
+      }
 
-      // Determine progress bar fills (greyed out if cancelled)
-      const fillProposed = isCancelled ? false : ['Proposed', 'Approved', 'Under Construction', 'Complete'].includes(status);
-      const fillApproved = isCancelled ? false : ['Approved', 'Under Construction', 'Complete'].includes(status);
-      const fillUnderConstruction = isCancelled ? false : ['Under Construction', 'Complete'].includes(status);
-      const fillComplete = isCancelled ? false : status === 'Complete';
+      console.log("Found project data:", project);
 
+      const statusRaw = project.Status || '';
+      const status = statusRaw.trim().toLowerCase();
+      const isCancelled = status === 'cancelled';
+
+      if (isCancelled) {
+        container.classList.add('cancelled');
+      } else {
+        container.classList.remove('cancelled');
+      }
+
+      const fillProposed = ['proposed', 'approved', 'under construction', 'complete'].includes(status);
+      const fillApproved = ['approved', 'under construction', 'complete'].includes(status);
+      const fillUnderConstruction = ['under construction', 'complete'].includes(status);
+      const fillComplete = status === 'complete';
+
+      const lastUpdatedRaw = project["Last Updated"] || project["LastUpdated"] || '';
       let lastUpdatedFormatted = '';
-      if (project["Last Updated"]) {
-        const d = new Date(project["Last Updated"]);
+      if (lastUpdatedRaw) {
+        const d = new Date(lastUpdatedRaw);
         if (!isNaN(d)) {
-          lastUpdatedFormatted = d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+          const options = { year: 'numeric', month: 'short', day: 'numeric' };
+          lastUpdatedFormatted = d.toLocaleDateString(undefined, options);
         }
       }
 
-      container.classList.toggle('cancelled', isCancelled);
+      // Build Cancelled pill HTML only if cancelled
+      const cancelledPillHtml = isCancelled
+        ? `<span class="cancelled-tag">Cancelled</span>`
+        : '';
 
       container.innerHTML = `
         <div class="project-status-wrapper">
@@ -62,7 +84,6 @@ document.addEventListener("DOMContentLoaded", () => {
             <div id="status-label-complete" class="status-step-label">Complete</div>
           </div>
         </div>
-
         <div class="project-stats">
           <div class="stat-block"><div class="label">Address</div><span>${project.Address || ''}</span></div>
           <div class="stat-block"><div class="label">Class</div><span>${project.Class || ''}</span></div>
@@ -70,17 +91,16 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="stat-block"><div class="label">Units</div><span>${project.Units || ''}</span></div>
           <div class="stat-block"><div class="label">Completion</div><span>${project.Completion || ''}</span></div>
         </div>
-
         ${lastUpdatedFormatted ? `<div class="last-updated-note">Last updated on ${lastUpdatedFormatted}</div>` : ''}
       `;
 
-      // Darken current and previous steps if not cancelled
+      // Darken current and previous steps (if not cancelled)
       if (!isCancelled) {
-        const steps = ['Proposed', 'Approved', 'Under Construction', 'Complete'];
+        const steps = ['proposed', 'approved', 'under construction', 'complete'];
         const currentIndex = steps.indexOf(status);
         steps.forEach((step, i) => {
           if (i <= currentIndex) {
-            const id = `status-label-${step.toLowerCase().replace(/\s+/g, '-')}`;
+            const id = `status-label-${step.replace(/\s+/g, '-')}`;
             const el = document.getElementById(id);
             if (el) el.style.color = "#000";
           }
@@ -88,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
     .catch(err => {
-      console.error(err);
-      container.textContent = "Error loading project data.";
+      console.error("Fetch error:", err);
+      container.innerHTML = "Error loading project data.";
     });
 });
