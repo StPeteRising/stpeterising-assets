@@ -13,12 +13,12 @@
   margin-bottom: 4px;
 }
 .cancelled-tag {
+  display: inline-block;
   background-color: #e03a3e; /* bright red */
   color: white;
   padding: 4px 12px;
   font-weight: 700;
   border-radius: 9999px;
-  display: inline-block;
   font-size: 0.85em;
   user-select: none;
   margin: 12px 0 8px;
