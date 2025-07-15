@@ -4,7 +4,6 @@
   border-radius: 12px 12px 0 0;
   font-family: inherit;
   text-align: center;
-  position: relative;
 }
 
 .project-status-label {
@@ -13,18 +12,21 @@
   color: #333;
   text-transform: uppercase;
   margin-bottom: 8px;
+  user-select: none;
 }
 
 .cancelled-tag {
   display: inline-block;
   background-color: #D32F2F; /* Vibrant red */
   color: white;
-  font-weight: 700;
-  font-size: 0.85em;
-  padding: 4px 12px;
+  font-weight: 900;
+  font-size: 1em;
+  padding: 6px 14px;
   border-radius: 12px;
   margin-bottom: 8px;
   user-select: none;
+  text-shadow: 0 0 3px rgba(0,0,0,0.6);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .status-bar-container {
@@ -63,6 +65,10 @@
   background-color: #00AE53;
 }
 
+.status-segment.cancelled {
+  background-color: #ccc;
+}
+
 .status-segment:not(:last-child) {
   border-right: 2px solid white;
 }
@@ -84,29 +90,6 @@
   transition: color 0.3s ease;
 }
 
-/* Grey out everything except the Cancelled pill if project is cancelled */
-.project-status-wrapper.cancelled {
-  filter: grayscale(70%);
-  opacity: 0.6;
-}
-
-.project-status-wrapper.cancelled .cancelled-tag {
-  filter: none;
-  opacity: 1;
-  margin-top: 4px;
-  margin-bottom: 12px;
-}
-
-.project-status-wrapper.cancelled .status-bar-container,
-.project-status-wrapper.cancelled .status-steps-labels,
-.project-status-wrapper.cancelled .project-status-label,
-.project-status-wrapper.cancelled .stat-block,
-.project-status-wrapper.cancelled .last-updated-note {
-  color: #777 !important;
-  user-select: none;
-}
-
-/* Stats styling */
 .project-stats {
   display: flex;
   flex-wrap: wrap;
@@ -118,6 +101,11 @@
   box-sizing: border-box;
   font-family: inherit;
   justify-content: center;
+  color: inherit; /* so grey applies if needed */
+}
+
+.project-stats.greyed {
+  color: #999999;
 }
 
 .project-stats div.stat-block {
@@ -135,13 +123,22 @@
   font-size: 0.85em;
   text-transform: uppercase;
   margin-bottom: 4px;
+  text-decoration: none;
   pointer-events: none;
+}
+
+.project-stats.greyed .label {
+  color: #999999;
 }
 
 .project-stats span {
   color: #111;
   font-size: 1em;
   text-align: center;
+}
+
+.project-stats.greyed span {
+  color: #999999;
 }
 
 .last-updated-note {
@@ -156,7 +153,6 @@
   font-family: inherit;
 }
 
-/* Responsive */
 @media (max-width: 480px) {
   .project-stats {
     gap: 16px 20px;
