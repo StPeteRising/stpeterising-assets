@@ -4,38 +4,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const slug = window.location.pathname.replace(/^\/|\/$/g, '').toLowerCase();
 
   if (!container) {
-    console.error("Container element with id 'project-info' not found.");
+    console.error("Container with id 'project-info' not found.");
     return;
   }
 
-  console.log("Starting fetch for project slug:", slug);
-
   fetch(sheetURL)
     .then(response => {
-      if (!response.ok) {
-        throw new Error(`Network response was not ok (${response.status})`);
-      }
+      if (!response.ok) throw new Error(`Network error: ${response.status}`);
       return response.json();
     })
     .then(data => {
-      console.log("Data fetched:", data.length, "rows");
-
-      if (!slug) {
-        console.warn("Project slug not specified.");
-        container.innerHTML = "Project slug not specified.";
-        return;
-      }
-
-      // Find project by Slug (case insensitive)
       const project = data.find(p => (p.Slug || '').toLowerCase() === slug);
-
       if (!project) {
-        console.error("Project not found for slug:", slug);
         container.innerHTML = "Project not found.";
         return;
       }
-
-      console.log("Found project data:", project);
 
       const statusRaw = project.Status || '';
       const status = statusRaw.trim().toLowerCase();
@@ -57,12 +40,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (lastUpdatedRaw) {
         const d = new Date(lastUpdatedRaw);
         if (!isNaN(d)) {
-          const options = { year: 'numeric', month: 'short', day: 'numeric' };
-          lastUpdatedFormatted = d.toLocaleDateString(undefined, options);
+          lastUpdatedFormatted = d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
         }
       }
 
-      // Build Cancelled pill HTML only if cancelled
       const cancelledPillHtml = isCancelled
         ? `<span class="cancelled-tag">Cancelled</span>`
         : '';
@@ -78,12 +59,13 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="status-segment ${fillComplete ? 'complete' : 'unfilled'}"></div>
           </div>
           <div class="status-steps-labels">
-            <div id="status-label-proposed" class="status-step-label">Proposed</div>
-            <div id="status-label-approved" class="status-step-label">Approved</div>
-            <div id="status-label-under-construction" class="status-step-label">Under Construction</div>
-            <div id="status-label-complete" class="status-step-label">Complete</div>
+            <div class="status-step-label">Proposed</div>
+            <div class="status-step-label">Approved</div>
+            <div class="status-step-label">Under Construction</div>
+            <div class="status-step-label">Complete</div>
           </div>
         </div>
+
         <div class="project-stats">
           <div class="stat-block"><div class="label">Address</div><span>${project.Address || ''}</span></div>
           <div class="stat-block"><div class="label">Class</div><span>${project.Class || ''}</span></div>
@@ -91,24 +73,24 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="stat-block"><div class="label">Units</div><span>${project.Units || ''}</span></div>
           <div class="stat-block"><div class="label">Completion</div><span>${project.Completion || ''}</span></div>
         </div>
+
         ${lastUpdatedFormatted ? `<div class="last-updated-note">Last updated on ${lastUpdatedFormatted}</div>` : ''}
       `;
 
-      // Darken current and previous steps (if not cancelled)
       if (!isCancelled) {
+        // Highlight current status label
         const steps = ['proposed', 'approved', 'under construction', 'complete'];
         const currentIndex = steps.indexOf(status);
         steps.forEach((step, i) => {
           if (i <= currentIndex) {
-            const id = `status-label-${step.replace(/\s+/g, '-')}`;
-            const el = document.getElementById(id);
-            if (el) el.style.color = "#000";
+            const labels = container.querySelectorAll('.status-step-label');
+            if (labels[i]) labels[i].style.color = "#000";
           }
         });
       }
     })
     .catch(err => {
-      console.error("Fetch error:", err);
+      console.error(err);
       container.innerHTML = "Error loading project data.";
     });
 });
