@@ -1,76 +1,49 @@
 document.addEventListener("DOMContentLoaded", () => {
   const sheetURL = 'https://opensheet.elk.sh/1e7n0NgW7swUmn6hqCW2KslFgVd3RJhQRiuVSaIY3A1c/Sheet1';
+  // Use slug from URL pathname
   const slug = window.location.pathname.replace(/^\/|\/$/g, '').toLowerCase();
-  const container = document.getElementById("project-info");
 
+  const container = document.getElementById("project-info");
   if (!container) {
-    console.error("Container element with id 'project-info' not found.");
+    console.error("Missing #project-info container");
     return;
   }
 
-  console.log("Starting fetch for project slug:", slug);
-
   fetch(sheetURL)
     .then(response => {
-      if (!response.ok) {
-        throw new Error(`Network response was not ok (${response.status})`);
-      }
+      if (!response.ok) throw new Error(`Network error: ${response.status}`);
       return response.json();
     })
     .then(data => {
-      console.log("Data fetched:", data.length, "rows");
-
-      if (!slug) {
-        console.warn("Project slug not specified.");
-        container.innerHTML = "Project slug not specified.";
-        return;
-      }
-
-      // Find project by slug (case-insensitive)
       const project = data.find(p => (p.Slug || '').toLowerCase() === slug);
-
       if (!project) {
-        console.error("Project not found for slug:", slug);
-        container.innerHTML = "Project not found.";
+        container.textContent = "Project not found.";
         return;
       }
 
-      console.log("Found project data:", project);
-
-      const statusRaw = project.Status || '';
-      const status = statusRaw.trim();
-
-      // Handle Cancelled specially
+      const status = (project.Status || '').trim();
       const isCancelled = status.toLowerCase() === 'cancelled';
 
-      // Status progress bar fill flags
-      const fillProposed = ['Proposed', 'Approved', 'Under Construction', 'Complete'].includes(status);
-      const fillApproved = ['Approved', 'Under Construction', 'Complete'].includes(status);
-      const fillUnderConstruction = ['Under Construction', 'Complete'].includes(status);
-      const fillComplete = status === 'Complete';
-
-      // Format last updated date
-      const lastUpdatedRaw = project["Last Updated"] || project["LastUpdated"] || '';
-      let lastUpdatedFormatted = '';
-      if (lastUpdatedRaw) {
-        const d = new Date(lastUpdatedRaw);
-        if (!isNaN(d)) {
-          const options = { year: 'numeric', month: 'short', day: 'numeric' };
-          lastUpdatedFormatted = d.toLocaleDateString(undefined, options);
-        }
-      }
-
-      // Cancelled pill html or empty string
+      // Build cancelled pill html if needed
       const cancelledPillHtml = isCancelled
         ? `<span class="cancelled-tag">Cancelled</span>`
         : '';
 
-      // Add 'cancelled' class to container if cancelled for CSS grey-out
-      if (isCancelled) {
-        container.classList.add('cancelled');
-      } else {
-        container.classList.remove('cancelled');
+      // Determine progress bar fills (greyed out if cancelled)
+      const fillProposed = isCancelled ? false : ['Proposed', 'Approved', 'Under Construction', 'Complete'].includes(status);
+      const fillApproved = isCancelled ? false : ['Approved', 'Under Construction', 'Complete'].includes(status);
+      const fillUnderConstruction = isCancelled ? false : ['Under Construction', 'Complete'].includes(status);
+      const fillComplete = isCancelled ? false : status === 'Complete';
+
+      let lastUpdatedFormatted = '';
+      if (project["Last Updated"]) {
+        const d = new Date(project["Last Updated"]);
+        if (!isNaN(d)) {
+          lastUpdatedFormatted = d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+        }
       }
+
+      container.classList.toggle('cancelled', isCancelled);
 
       container.innerHTML = `
         <div class="project-status-wrapper">
@@ -89,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div id="status-label-complete" class="status-step-label">Complete</div>
           </div>
         </div>
+
         <div class="project-stats">
           <div class="stat-block"><div class="label">Address</div><span>${project.Address || ''}</span></div>
           <div class="stat-block"><div class="label">Class</div><span>${project.Class || ''}</span></div>
@@ -96,6 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="stat-block"><div class="label">Units</div><span>${project.Units || ''}</span></div>
           <div class="stat-block"><div class="label">Completion</div><span>${project.Completion || ''}</span></div>
         </div>
+
         ${lastUpdatedFormatted ? `<div class="last-updated-note">Last updated on ${lastUpdatedFormatted}</div>` : ''}
       `;
 
@@ -113,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     })
     .catch(err => {
-      console.error("Fetch error:", err);
-      container.innerHTML = "Error loading project data.";
+      console.error(err);
+      container.textContent = "Error loading project data.";
     });
 });
