@@ -19,13 +19,14 @@
   display: inline-block;
   background-color: #C62828; /* Softer rich red */
   color: white;
-  font-weight: 900;
+  font-weight: 700; /* Less bold */
   font-size: 1em;
   padding: 6px 14px;
   border-radius: 12px;
   margin-bottom: 8px;
   user-select: none;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  letter-spacing: 0.06em; /* Slightly spaced letters */
 }
 
 .status-bar-container {
