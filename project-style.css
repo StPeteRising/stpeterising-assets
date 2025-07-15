@@ -7,31 +7,40 @@
   position: relative;
 }
 
-.project-status-wrapper.cancelled *:not(.cancelled-tag) {
+/* Grey out everything except the Cancelled pill */
+.project-status-wrapper.cancelled > *:not(.cancelled-tag) {
   filter: grayscale(90%) brightness(80%);
   pointer-events: none;
   user-select: none;
+  opacity: 0.6;
 }
 
-.project-status-label {
-  font-weight: 700;
-  font-size: 0.85em;
-  color: #333;
-  text-transform: uppercase;
-  margin-bottom: 12px;
-  user-select: none;
-}
-
+/* Make sure Cancelled pill is always bright red and on its own line */
 .cancelled-tag {
-  background-color: #d32f2f; /* bright red */
-  color: white;
+  background-color: #d32f2f !important;
+  color: white !important;
   font-weight: 700;
   font-size: 0.85em;
   padding: 4px 14px;
   border-radius: 20px;
   margin: 0 0 16px 0;
   user-select: none;
-  display: inline-block;
+  display: block; /* force on its own line */
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* Status label styling */
+.project-status-label {
+  font-weight: 700;
+  font-size: 0.85em;
+  color: #333;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  user-select: none;
 }
 
 .status-bar-container {
