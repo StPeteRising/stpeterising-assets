@@ -26,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      // Find project by slug (case-insensitive)
       const project = data.find(p => (p.Slug || '').toLowerCase() === slug);
 
       if (!project) {
@@ -39,17 +40,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const statusRaw = project.Status || '';
       const status = statusRaw.trim();
 
-      if (status.toLowerCase() === 'cancelled') {
-        container.classList.add('cancelled');
-      } else {
-        container.classList.remove('cancelled');
-      }
+      // Handle Cancelled specially
+      const isCancelled = status.toLowerCase() === 'cancelled';
 
+      // Status progress bar fill flags
       const fillProposed = ['Proposed', 'Approved', 'Under Construction', 'Complete'].includes(status);
       const fillApproved = ['Approved', 'Under Construction', 'Complete'].includes(status);
       const fillUnderConstruction = ['Under Construction', 'Complete'].includes(status);
       const fillComplete = status === 'Complete';
 
+      // Format last updated date
       const lastUpdatedRaw = project["Last Updated"] || project["LastUpdated"] || '';
       let lastUpdatedFormatted = '';
       if (lastUpdatedRaw) {
@@ -60,16 +60,22 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      const cancelledPillHtml = status.toLowerCase() === 'cancelled'
+      // Cancelled pill html or empty string
+      const cancelledPillHtml = isCancelled
         ? `<span class="cancelled-tag">Cancelled</span>`
         : '';
 
+      // Add 'cancelled' class to container if cancelled for CSS grey-out
+      if (isCancelled) {
+        container.classList.add('cancelled');
+      } else {
+        container.classList.remove('cancelled');
+      }
+
       container.innerHTML = `
         <div class="project-status-wrapper">
-          <div class="project-status-label">
-            Status
-            ${cancelledPillHtml}
-          </div>
+          <div class="project-status-label">Status</div>
+          ${cancelledPillHtml}
           <div class="status-bar-container">
             <div class="status-segment ${fillProposed ? 'proposed' : 'unfilled'}"></div>
             <div class="status-segment ${fillApproved ? 'approved' : 'unfilled'}"></div>
@@ -93,8 +99,8 @@ document.addEventListener("DOMContentLoaded", () => {
         ${lastUpdatedFormatted ? `<div class="last-updated-note">Last updated on ${lastUpdatedFormatted}</div>` : ''}
       `;
 
-      // Darken current and previous steps for normal status
-      if (status.toLowerCase() !== 'cancelled') {
+      // Darken current and previous steps if not cancelled
+      if (!isCancelled) {
         const steps = ['Proposed', 'Approved', 'Under Construction', 'Complete'];
         const currentIndex = steps.indexOf(status);
         steps.forEach((step, i) => {
