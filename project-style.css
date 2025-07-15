@@ -7,57 +7,22 @@
   position: relative;
 }
 
-/* Remove greying/filter/opacity from the container itself */
-.project-status-wrapper.cancelled {
-  opacity: 1 !important;
-  filter: none !important;
-  pointer-events: auto !important;
-  user-select: auto !important;
-}
-
-/* Grey out everything except the Cancelled pill */
-.project-status-wrapper.cancelled > *:not(.cancelled-tag) {
-  filter: grayscale(90%) brightness(80%);
-  pointer-events: none;
-  user-select: none;
-  opacity: 0.6;
-}
-
-/* Grey out all descendants inside project-stats */
-.project-status-wrapper.cancelled .project-stats,
-.project-status-wrapper.cancelled .project-stats * {
-  filter: grayscale(90%) brightness(80%);
-  pointer-events: none;
-  user-select: none;
-  opacity: 0.6;
-}
-
-/* Make the Cancelled pill bright red and on its own line */
-.cancelled-tag {
-  background-color: #d32f2f !important;
-  color: white !important;
-  font-weight: 700;
-  font-size: 0.85em;
-  padding: 4px 14px;
-  border-radius: 20px;
-  margin: 0 0 16px 0;
-  user-select: none;
-  display: block;
-  width: fit-content;
-  margin-left: auto;
-  margin-right: auto;
-  opacity: 1 !important;
-  filter: none !important;
-  pointer-events: auto !important;
-  user-select: auto !important;
-}
-
-/* Status label styling */
 .project-status-label {
   font-weight: 700;
   font-size: 0.85em;
   color: #333;
   text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.cancelled-tag {
+  display: inline-block;
+  background-color: #D32F2F; /* Vibrant red */
+  color: white;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 4px 12px;
+  border-radius: 12px;
   margin-bottom: 8px;
   user-select: none;
 }
@@ -119,6 +84,29 @@
   transition: color 0.3s ease;
 }
 
+/* Grey out everything except the Cancelled pill if project is cancelled */
+.project-status-wrapper.cancelled {
+  filter: grayscale(70%);
+  opacity: 0.6;
+}
+
+.project-status-wrapper.cancelled .cancelled-tag {
+  filter: none;
+  opacity: 1;
+  margin-top: 4px;
+  margin-bottom: 12px;
+}
+
+.project-status-wrapper.cancelled .status-bar-container,
+.project-status-wrapper.cancelled .status-steps-labels,
+.project-status-wrapper.cancelled .project-status-label,
+.project-status-wrapper.cancelled .stat-block,
+.project-status-wrapper.cancelled .last-updated-note {
+  color: #777 !important;
+  user-select: none;
+}
+
+/* Stats styling */
 .project-stats {
   display: flex;
   flex-wrap: wrap;
@@ -147,7 +135,6 @@
   font-size: 0.85em;
   text-transform: uppercase;
   margin-bottom: 4px;
-  text-decoration: none;
   pointer-events: none;
 }
 
@@ -169,6 +156,7 @@
   font-family: inherit;
 }
 
+/* Responsive */
 @media (max-width: 480px) {
   .project-stats {
     gap: 16px 20px;
