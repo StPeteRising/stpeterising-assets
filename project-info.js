@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  console.log("Starting fetch for slug:", slug);
+  console.log("Starting fetch for project slug:", slug);
 
   fetch(sheetURL)
     .then(response => {
@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("Data fetched:", data.length, "rows");
 
       if (!slug) {
-        console.warn("Slug not specified.");
+        console.warn("Project slug not specified.");
         container.innerHTML = "Project slug not specified.";
         return;
       }
@@ -39,13 +39,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const statusRaw = project.Status || '';
       const status = statusRaw.trim();
 
-      const isCancelled = status.toLowerCase() === 'cancelled';
+      if (status.toLowerCase() === 'cancelled') {
+        container.classList.add('cancelled');
+      } else {
+        container.classList.remove('cancelled');
+      }
 
-      // Determine progress bar fill based on status (only if not cancelled)
-      const fillProposed = !isCancelled && ['Proposed', 'Approved', 'Under Construction', 'Complete'].includes(status);
-      const fillApproved = !isCancelled && ['Approved', 'Under Construction', 'Complete'].includes(status);
-      const fillUnderConstruction = !isCancelled && ['Under Construction', 'Complete'].includes(status);
-      const fillComplete = !isCancelled && status === 'Complete';
+      const fillProposed = ['Proposed', 'Approved', 'Under Construction', 'Complete'].includes(status);
+      const fillApproved = ['Approved', 'Under Construction', 'Complete'].includes(status);
+      const fillUnderConstruction = ['Under Construction', 'Complete'].includes(status);
+      const fillComplete = status === 'Complete';
 
       const lastUpdatedRaw = project["Last Updated"] || project["LastUpdated"] || '';
       let lastUpdatedFormatted = '';
@@ -57,8 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // Cancelled pill HTML
-      const cancelledPillHtml = isCancelled
+      const cancelledPillHtml = status.toLowerCase() === 'cancelled'
         ? `<span class="cancelled-tag">Cancelled</span>`
         : '';
 
@@ -91,15 +93,8 @@ document.addEventListener("DOMContentLoaded", () => {
         ${lastUpdatedFormatted ? `<div class="last-updated-note">Last updated on ${lastUpdatedFormatted}</div>` : ''}
       `;
 
-      // Add or remove cancelled class on main container
-      if (isCancelled) {
-        container.classList.add('cancelled');
-      } else {
-        container.classList.remove('cancelled');
-      }
-
-      // Darken current and previous steps (only if not cancelled)
-      if (!isCancelled) {
+      // Darken current and previous steps for normal status
+      if (status.toLowerCase() !== 'cancelled') {
         const steps = ['Proposed', 'Approved', 'Under Construction', 'Complete'];
         const currentIndex = steps.indexOf(status);
         steps.forEach((step, i) => {
@@ -114,6 +109,5 @@ document.addEventListener("DOMContentLoaded", () => {
     .catch(err => {
       console.error("Fetch error:", err);
       container.innerHTML = "Error loading project data.";
-      container.classList.remove('cancelled');
     });
 });
