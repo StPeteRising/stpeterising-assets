@@ -122,17 +122,14 @@
 }
 
 /* Cancelled styles */
-.project-status-wrapper.cancelled,
-.project-status-wrapper.cancelled .project-stats,
-.project-status-wrapper.cancelled .last-updated-note {
+#project-info.cancelled > *:not(.cancelled-tag) {
   opacity: 0.5;
-  filter: none !important;
   pointer-events: none;
 }
 
-.project-status-wrapper.cancelled .cancelled-tag {
+#project-info .cancelled-tag {
   display: inline-block;
-  margin: 0 0 12px;
+  margin-left: 8px;
   padding: 4px 16px;
   font-weight: 700;
   font-size: 0.85em;
