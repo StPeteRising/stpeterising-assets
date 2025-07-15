@@ -1,113 +1,164 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const sheetURL = 'https://opensheet.elk.sh/1e7n0NgW7swUmn6hqCW2KslFgVd3RJhQRiuVSaIY3A1c/Sheet1';
+.project-status-wrapper {
+  background: #f8f8f8;
+  padding: 20px 20px 8px;
+  border-radius: 12px 12px 0 0;
+  font-family: inherit;
+  text-align: center;
+}
 
-  // Get slug from URL path: "/3rd-3rd" => "3rd-3rd"
-  const slug = window.location.pathname.replace(/^\/|\/$/g, '').toLowerCase();
-  const container = document.getElementById("project-info");
+.project-status-wrapper.cancelled {
+  opacity: 0.5;
+}
 
-  if (!container) {
-    console.error("Container element with id 'project-info' not found.");
-    return;
+.project-status-label {
+  font-weight: 700;
+  font-size: 0.85em;
+  color: #333;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.cancelled-tag {
+  opacity: 1 !important;
+  background-color: #e03a3e !important;
+  color: white !important;
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.85em;
+  user-select: none;
+  margin: 12px 0 8px;
+  z-index: 1;
+  position: relative;
+}
+
+.status-bar-container {
+  display: flex;
+  border-radius: 30px;
+  overflow: hidden;
+  height: 20px;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto 8px;
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.1);
+}
+
+.status-segment {
+  flex: 1;
+  transition: background-color 0.4s ease;
+}
+
+.status-segment.unfilled {
+  background-color: #e0e0e0;
+}
+
+.status-segment.proposed {
+  background-color: #E6A83D;
+}
+
+.status-segment.approved {
+  background-color: #009688;
+}
+
+.status-segment.under-construction {
+  background-color: #0081E0;
+}
+
+.status-segment.complete {
+  background-color: #00AE53;
+}
+
+.status-segment:not(:last-child) {
+  border-right: 2px solid white;
+}
+
+.status-steps-labels {
+  display: flex;
+  max-width: 560px;
+  margin: 4px auto 0 auto;
+}
+
+.status-step-label {
+  flex: 1;
+  text-align: center;
+  font-size: 0.75em;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  user-select: none;
+  transition: color 0.3s ease;
+}
+
+.project-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px 32px;
+  background: #f8f8f8;
+  padding: 16px 20px 20px;
+  border-radius: 0 0 12px 12px;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  justify-content: center;
+}
+
+.project-stats div.stat-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100px;
+  white-space: normal;
+  text-align: center;
+}
+
+.project-stats .label {
+  font-weight: 700;
+  color: #333;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  text-decoration: none;
+  pointer-events: none;
+}
+
+.project-stats span {
+  color: #111;
+  font-size: 1em;
+  text-align: center;
+}
+
+.last-updated-note {
+  font-style: italic;
+  font-size: 0.85em;
+  color: #666;
+  margin-top: 12px;
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: 0;
+  text-align: right;
+  font-family: inherit;
+}
+
+@media (max-width: 480px) {
+  .project-stats {
+    gap: 16px 20px;
   }
-
-  console.log("Looking for project slug:", slug);
-
-  fetch(sheetURL)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`Network response was not ok (${response.status})`);
-      }
-      return response.json();
-    })
-    .then(data => {
-      console.log("Fetched data rows:", data.length);
-
-      if (!slug) {
-        container.innerHTML = "Project slug not found in URL.";
-        return;
-      }
-
-      // Find project where Slug column matches URL slug (case-insensitive)
-      const project = data.find(p => (p.Slug || '').trim().toLowerCase() === slug);
-
-      if (!project) {
-        container.innerHTML = "Project not found.";
-        console.error("No project matched slug:", slug);
-        return;
-      }
-
-      console.log("Found project:", project);
-
-      const statusRaw = project.Status || '';
-      const status = statusRaw.trim().toLowerCase();
-      const isCancelled = status === 'cancelled';
-
-      // Determine which bars fill
-      const fillProposed = ['proposed', 'approved', 'under construction', 'complete'].includes(status);
-      const fillApproved = ['approved', 'under construction', 'complete'].includes(status);
-      const fillUnderConstruction = ['under construction', 'complete'].includes(status);
-      const fillComplete = status === 'complete';
-
-      // Format last updated date if present
-      const lastUpdatedRaw = project["Last Updated"] || project["LastUpdated"] || '';
-      let lastUpdatedFormatted = '';
-      if (lastUpdatedRaw) {
-        const d = new Date(lastUpdatedRaw);
-        if (!isNaN(d)) {
-          const options = { year: 'numeric', month: 'short', day: 'numeric' };
-          lastUpdatedFormatted = d.toLocaleDateString(undefined, options);
-        }
-      }
-
-      // Prepare Cancelled pill HTML if needed
-      const cancelledPillHtml = isCancelled
-        ? `<span class="cancelled-tag">Cancelled</span>`
-        : '';
-
-      container.innerHTML = `
-        <div class="project-status-wrapper" style="${isCancelled ? 'filter: grayscale(1); opacity: 0.7;' : ''}">
-          <div class="project-status-label">Status</div>
-          ${cancelledPillHtml}
-          <div class="status-bar-container">
-            <div class="status-segment ${fillProposed && !isCancelled ? 'proposed' : 'unfilled'}"></div>
-            <div class="status-segment ${fillApproved && !isCancelled ? 'approved' : 'unfilled'}"></div>
-            <div class="status-segment ${fillUnderConstruction && !isCancelled ? 'under-construction' : 'unfilled'}"></div>
-            <div class="status-segment ${fillComplete && !isCancelled ? 'complete' : 'unfilled'}"></div>
-          </div>
-          <div class="status-steps-labels" style="${isCancelled ? 'color: #888;' : ''}">
-            <div id="status-label-proposed" class="status-step-label">Proposed</div>
-            <div id="status-label-approved" class="status-step-label">Approved</div>
-            <div id="status-label-under-construction" class="status-step-label">Under Construction</div>
-            <div id="status-label-complete" class="status-step-label">Complete</div>
-          </div>
-        </div>
-
-        <div class="project-stats" style="${isCancelled ? 'filter: grayscale(1); opacity: 0.7;' : ''}">
-          <div class="stat-block"><div class="label">Address</div><span>${project.Address || ''}</span></div>
-          <div class="stat-block"><div class="label">Class</div><span>${project.Class || ''}</span></div>
-          <div class="stat-block"><div class="label">Floors</div><span>${project.Floors || ''}</span></div>
-          <div class="stat-block"><div class="label">Units</div><span>${project.Units || ''}</span></div>
-          <div class="stat-block"><div class="label">Completion</div><span>${project.Completion || ''}</span></div>
-        </div>
-
-        ${lastUpdatedFormatted ? `<div class="last-updated-note">Last updated on ${lastUpdatedFormatted}</div>` : ''}
-      `;
-
-      // Darken completed steps (unless cancelled)
-      if (!isCancelled) {
-        const steps = ['proposed', 'approved', 'under construction', 'complete'];
-        const currentIndex = steps.indexOf(status);
-        steps.forEach((step, i) => {
-          if (i <= currentIndex) {
-            const id = `status-label-${step.replace(/\s+/g, '-')}`;
-            const el = document.getElementById(id);
-            if (el) el.style.color = "#000";
-          }
-        });
-      }
-    })
-    .catch(err => {
-      console.error("Fetch error:", err);
-      container.innerHTML = "Error loading project data.";
-    });
-});
+  .project-stats div.stat-block {
+    flex: 1 1 100%;
+    min-width: auto;
+  }
+  .status-steps-labels {
+    max-width: 100%;
+    margin: 8px auto 0 auto;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+  }
+  .status-step-label {
+    flex: 1 1 auto;
+    padding: 0 6px;
+    white-space: normal;
+    line-height: 1.2em;
+    text-align: center;
+  }
+}
