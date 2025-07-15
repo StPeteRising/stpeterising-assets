@@ -37,14 +37,15 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("Found project data:", project);
 
       const statusRaw = project.Status || '';
-      const status = statusRaw.trim().toLowerCase();
-      const isCancelled = status === 'cancelled';
+      const status = statusRaw.trim();
 
-      // For normal progress bar fill
-      const fillProposed = ['proposed', 'approved', 'under construction', 'complete'].includes(status);
-      const fillApproved = ['approved', 'under construction', 'complete'].includes(status);
-      const fillUnderConstruction = ['under construction', 'complete'].includes(status);
-      const fillComplete = status === 'complete';
+      const isCancelled = status.toLowerCase() === 'cancelled';
+
+      // Determine progress bar fill based on status (only if not cancelled)
+      const fillProposed = !isCancelled && ['Proposed', 'Approved', 'Under Construction', 'Complete'].includes(status);
+      const fillApproved = !isCancelled && ['Approved', 'Under Construction', 'Complete'].includes(status);
+      const fillUnderConstruction = !isCancelled && ['Under Construction', 'Complete'].includes(status);
+      const fillComplete = !isCancelled && status === 'Complete';
 
       const lastUpdatedRaw = project["Last Updated"] || project["LastUpdated"] || '';
       let lastUpdatedFormatted = '';
@@ -56,23 +57,22 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // Build the Cancelled pill html (only if cancelled)
+      // Cancelled pill HTML
       const cancelledPillHtml = isCancelled
         ? `<span class="cancelled-tag">Cancelled</span>`
         : '';
 
-      // Add 'cancelled' class to wrapper if needed
-      const wrapperClass = isCancelled ? 'project-status-wrapper cancelled' : 'project-status-wrapper';
-
       container.innerHTML = `
-        <div class="${wrapperClass}">
-          <div class="project-status-label">Status</div>
-          ${cancelledPillHtml}
+        <div class="project-status-wrapper">
+          <div class="project-status-label">
+            Status
+            ${cancelledPillHtml}
+          </div>
           <div class="status-bar-container">
-            <div class="status-segment ${fillProposed && !isCancelled ? 'proposed' : 'unfilled'}"></div>
-            <div class="status-segment ${fillApproved && !isCancelled ? 'approved' : 'unfilled'}"></div>
-            <div class="status-segment ${fillUnderConstruction && !isCancelled ? 'under-construction' : 'unfilled'}"></div>
-            <div class="status-segment ${fillComplete && !isCancelled ? 'complete' : 'unfilled'}"></div>
+            <div class="status-segment ${fillProposed ? 'proposed' : 'unfilled'}"></div>
+            <div class="status-segment ${fillApproved ? 'approved' : 'unfilled'}"></div>
+            <div class="status-segment ${fillUnderConstruction ? 'under-construction' : 'unfilled'}"></div>
+            <div class="status-segment ${fillComplete ? 'complete' : 'unfilled'}"></div>
           </div>
           <div class="status-steps-labels">
             <div id="status-label-proposed" class="status-step-label">Proposed</div>
@@ -91,13 +91,20 @@ document.addEventListener("DOMContentLoaded", () => {
         ${lastUpdatedFormatted ? `<div class="last-updated-note">Last updated on ${lastUpdatedFormatted}</div>` : ''}
       `;
 
+      // Add or remove cancelled class on main container
+      if (isCancelled) {
+        container.classList.add('cancelled');
+      } else {
+        container.classList.remove('cancelled');
+      }
+
+      // Darken current and previous steps (only if not cancelled)
       if (!isCancelled) {
-        // Darken current and previous steps only if not cancelled
-        const steps = ['proposed', 'approved', 'under construction', 'complete'];
+        const steps = ['Proposed', 'Approved', 'Under Construction', 'Complete'];
         const currentIndex = steps.indexOf(status);
         steps.forEach((step, i) => {
           if (i <= currentIndex) {
-            const id = `status-label-${step.replace(/\s+/g, '-')}`;
+            const id = `status-label-${step.toLowerCase().replace(/\s+/g, '-')}`;
             const el = document.getElementById(id);
             if (el) el.style.color = "#000";
           }
@@ -107,5 +114,6 @@ document.addEventListener("DOMContentLoaded", () => {
     .catch(err => {
       console.error("Fetch error:", err);
       container.innerHTML = "Error loading project data.";
+      container.classList.remove('cancelled');
     });
 });
