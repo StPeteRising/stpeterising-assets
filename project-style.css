@@ -7,6 +7,14 @@
   position: relative;
 }
 
+/* Remove greying/filter/opacity from the container itself */
+.project-status-wrapper.cancelled {
+  opacity: 1 !important;
+  filter: none !important;
+  pointer-events: auto !important;
+  user-select: auto !important;
+}
+
 /* Grey out everything except the Cancelled pill */
 .project-status-wrapper.cancelled > *:not(.cancelled-tag) {
   filter: grayscale(90%) brightness(80%);
@@ -15,7 +23,7 @@
   opacity: 0.6;
 }
 
-/* Also grey out all descendants inside the stats blocks */
+/* Grey out all descendants inside project-stats */
 .project-status-wrapper.cancelled .project-stats,
 .project-status-wrapper.cancelled .project-stats * {
   filter: grayscale(90%) brightness(80%);
@@ -24,7 +32,7 @@
   opacity: 0.6;
 }
 
-/* Make sure Cancelled pill is always bright red and on its own line */
+/* Make the Cancelled pill bright red and on its own line */
 .cancelled-tag {
   background-color: #d32f2f !important;
   color: white !important;
@@ -34,12 +42,14 @@
   border-radius: 20px;
   margin: 0 0 16px 0;
   user-select: none;
-  display: block; /* force on its own line */
+  display: block;
   width: fit-content;
   margin-left: auto;
   margin-right: auto;
   opacity: 1 !important;
   filter: none !important;
+  pointer-events: auto !important;
+  user-select: auto !important;
 }
 
 /* Status label styling */
