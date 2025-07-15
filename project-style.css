@@ -4,14 +4,10 @@
   border-radius: 12px 12px 0 0;
   font-family: inherit;
   text-align: center;
-  /* Grey out when cancelled */
-  filter: grayscale(100%);
-  opacity: 0.5;
 }
 
-.project-status-wrapper:not(.cancelled) {
-  filter: none;
-  opacity: 1;
+.project-status-wrapper.cancelled {
+  opacity: 0.5;
 }
 
 .project-status-label {
@@ -20,6 +16,21 @@
   color: #333;
   text-transform: uppercase;
   margin-bottom: 12px;
+}
+
+.cancelled-tag {
+  opacity: 1 !important;
+  background-color: #e03a3e !important;
+  color: white !important;
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.85em;
+  user-select: none;
+  margin: 12px 0 8px;
+  z-index: 1;
+  position: relative;
 }
 
 .status-bar-container {
@@ -127,22 +138,6 @@
   margin-right: 0;
   text-align: right;
   font-family: inherit;
-}
-
-.cancelled-tag {
-  filter: none !important;
-  opacity: 1 !important;
-  background-color: #e03a3e !important;
-  color: white !important;
-  display: inline-block !important;
-  padding: 4px 12px !important;
-  border-radius: 9999px !important;
-  font-weight: 700 !important;
-  font-size: 0.85em !important;
-  user-select: none !important;
-  margin: 12px 0 8px !important;
-  z-index: 1;
-  position: relative;
 }
 
 @media (max-width: 480px) {
