@@ -13,6 +13,9 @@
   text-transform: uppercase;
   margin-bottom: 12px;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* center heading and pill vertically stacked */
 }
 
 .status-bar-container {
@@ -123,8 +126,7 @@
 }
 
 .cancelled-tag {
-  display: inline-block;
-  margin-left: 8px;
+  margin-top: 8px;
   padding: 4px 16px;
   font-weight: 700;
   font-size: 0.85em;
@@ -135,11 +137,19 @@
   user-select: none;
   opacity: 1 !important;
   pointer-events: auto;
+  display: inline-block;
 }
 
-/* Grey out all except the Cancelled pill when cancelled */
+/* Grey out everything except cancelled pill and descendants */
 #project-info.cancelled *:not(.cancelled-tag):not(.cancelled-tag *) {
-  opacity: 0.5;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Also grey the progress bar and step labels for cancelled */
+#project-info.cancelled .status-bar-container,
+#project-info.cancelled .status-steps-labels {
+  opacity: 0.6;
   pointer-events: none;
 }
 
