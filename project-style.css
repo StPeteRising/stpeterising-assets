@@ -1,6 +1,6 @@
 .project-status-wrapper {
   background: #f8f8f8;
-  padding: 20px 20px 8px;
+  padding: 20px;
   border-radius: 12px 12px 0 0;
   font-family: inherit;
   text-align: center;
@@ -12,21 +12,30 @@
   font-size: 0.85em;
   color: #333;
   text-transform: uppercase;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
+/* Cancelled pill styling */
 .cancelled-tag {
   display: inline-block;
   background-color: #d32f2f; /* bright red */
-  color: #fff;
+  color: white;
   font-weight: 700;
   font-size: 0.85em;
-  padding: 4px 12px;
+  padding: 4px 14px;
   border-radius: 20px;
-  margin-bottom: 12px;
+  margin: 0 0 16px 0;
   user-select: none;
 }
 
+/* Grey out everything in wrapper except cancelled-pill */
+.project-status-wrapper.cancelled *:not(.cancelled-tag) {
+  filter: grayscale(90%) brightness(80%);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Status bar container and segments */
 .status-bar-container {
   display: flex;
   border-radius: 30px;
@@ -115,7 +124,6 @@
   font-size: 0.85em;
   text-transform: uppercase;
   margin-bottom: 4px;
-  text-decoration: none;
   pointer-events: none;
 }
 
@@ -137,22 +145,7 @@
   font-family: inherit;
 }
 
-/* Grey out everything except the red pill when cancelled */
-.cancelled {
-  filter: grayscale(90%) brightness(80%);
-  pointer-events: none;
-  user-select: none;
-  transition: filter 0.3s ease;
-}
-
-/* Make sure the Cancelled pill inside .cancelled is not greyed out */
-.cancelled .cancelled-tag {
-  filter: none !important;
-  pointer-events: auto !important;
-  user-select: auto !important;
-}
-
-/* Responsive adjustments */
+/* Responsive tweaks */
 @media (max-width: 480px) {
   .project-stats {
     gap: 16px 20px;
