@@ -19,10 +19,9 @@
 }
 
 .cancelled-tag {
-  opacity: 1 !important;
+  display: inline-block;
   background-color: #e03a3e !important;
   color: white !important;
-  display: inline-block;
   padding: 4px 12px;
   border-radius: 9999px;
   font-weight: 700;
@@ -31,6 +30,8 @@
   margin: 12px 0 8px;
   z-index: 1;
   position: relative;
+  opacity: 1 !important;
+  filter: none !important;
 }
 
 .status-bar-container {
@@ -41,7 +42,7 @@
   width: 100%;
   max-width: 560px;
   margin: 0 auto 8px;
-  box-shadow: inset 0 0 6px rgba(0,0,0,0.1);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
 }
 
 .status-segment {
@@ -52,23 +53,18 @@
 .status-segment.unfilled {
   background-color: #e0e0e0;
 }
-
 .status-segment.proposed {
-  background-color: #E6A83D;
+  background-color: #e6a83d;
 }
-
 .status-segment.approved {
   background-color: #009688;
 }
-
 .status-segment.under-construction {
-  background-color: #0081E0;
+  background-color: #0081e0;
 }
-
 .status-segment.complete {
-  background-color: #00AE53;
+  background-color: #00ae53;
 }
-
 .status-segment:not(:last-child) {
   border-right: 2px solid white;
 }
@@ -78,7 +74,6 @@
   max-width: 560px;
   margin: 4px auto 0 auto;
 }
-
 .status-step-label {
   flex: 1;
   text-align: center;
@@ -111,7 +106,6 @@
   white-space: normal;
   text-align: center;
 }
-
 .project-stats .label {
   font-weight: 700;
   color: #333;
@@ -121,44 +115,5 @@
   text-decoration: none;
   pointer-events: none;
 }
-
 .project-stats span {
-  color: #111;
-  font-size: 1em;
-  text-align: center;
-}
-
-.last-updated-note {
-  font-style: italic;
-  font-size: 0.85em;
-  color: #666;
-  margin-top: 12px;
-  max-width: 560px;
-  margin-left: auto;
-  margin-right: 0;
-  text-align: right;
-  font-family: inherit;
-}
-
-@media (max-width: 480px) {
-  .project-stats {
-    gap: 16px 20px;
-  }
-  .project-stats div.stat-block {
-    flex: 1 1 100%;
-    min-width: auto;
-  }
-  .status-steps-labels {
-    max-width: 100%;
-    margin: 8px auto 0 auto;
-    justify-content: space-between;
-    flex-wrap: nowrap;
-  }
-  .status-step-label {
-    flex: 1 1 auto;
-    padding: 0 6px;
-    white-space: normal;
-    line-height: 1.2em;
-    text-align: center;
-  }
-}
+  co
