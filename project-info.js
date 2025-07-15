@@ -8,29 +8,44 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+  console.log("Page slug:", slug);
+
   fetch(sheetURL)
     .then(response => {
       if (!response.ok) throw new Error(`Network response was not ok (${response.status})`);
       return response.json();
     })
     .then(data => {
+      console.log("Fetched rows:", data.length);
+
       const project = data.find(p => (p.Slug || '').trim() === slug);
 
       if (!project) {
+        console.warn("Project not found for slug:", slug);
         container.innerHTML = "Project not found.";
         return;
       }
 
+      console.log("Project found:", project);
+
       const statusRaw = project.Status || '';
       const status = statusRaw.trim().toLowerCase();
 
-      // Determine fill booleans for progress bar (except Cancelled)
+      console.log("Raw status from sheet:", statusRaw);
+      console.log("Normalized status:", status);
+
+      // FOR TESTING: force cancelled true so you see the pill regardless of actual status
+      const isCancelled = true; // CHANGE TO: (status === 'cancelled') when done testing
+
+      const cancelledPillHtml = isCancelled
+        ? `<div class="cancelled-tag">Cancelled</div>`
+        : '';
+
       const fillProposed = ['proposed', 'approved', 'under construction', 'complete'].includes(status);
       const fillApproved = ['approved', 'under construction', 'complete'].includes(status);
       const fillUnderConstruction = ['under construction', 'complete'].includes(status);
       const fillComplete = status === 'complete';
 
-      // Format last updated date
       const lastUpdatedRaw = project["Last Updated"] || project["LastUpdated"] || '';
       let lastUpdatedFormatted = '';
       if (lastUpdatedRaw) {
@@ -40,16 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // Cancelled pill HTML (if applicable)
-      const isCancelled = (status === 'cancelled');
-      const cancelledPillHtml = isCancelled
-        ? `<div class="cancelled-tag">Cancelled</div>`
-        : '';
-
-      // Grey progress bar segments if cancelled
-      const segmentClass = isCancelled ? 'status-segment unfilled' : '';
-
-      // Grey status labels if cancelled, black otherwise
       const statusLabelColor = isCancelled ? '#aaa' : '#000';
 
       container.innerHTML = `
@@ -71,33 +76,18 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
 
         <div class="project-stats">
-          <div class="stat-block">
-            <div class="label">Address</div>
-            <span>${project.Address || ''}</span>
-          </div>
-          <div class="stat-block">
-            <div class="label">Class</div>
-            <span>${project.Class || ''}</span>
-          </div>
-          <div class="stat-block">
-            <div class="label">Floors</div>
-            <span>${project.Floors || ''}</span>
-          </div>
-          <div class="stat-block">
-            <div class="label">Units</div>
-            <span>${project.Units || ''}</span>
-          </div>
-          <div class="stat-block">
-            <div class="label">Completion</div>
-            <span>${project.Completion || ''}</span>
-          </div>
+          <div class="stat-block"><div class="label">Address</div><span>${project.Address || ''}</span></div>
+          <div class="stat-block"><div class="label">Class</div><span>${project.Class || ''}</span></div>
+          <div class="stat-block"><div class="label">Floors</div><span>${project.Floors || ''}</span></div>
+          <div class="stat-block"><div class="label">Units</div><span>${project.Units || ''}</span></div>
+          <div class="stat-block"><div class="label">Completion</div><span>${project.Completion || ''}</span></div>
         </div>
 
         ${lastUpdatedFormatted ? `<div class="last-updated-note">Last updated on ${lastUpdatedFormatted}</div>` : ''}
       `;
     })
     .catch(err => {
+      console.error("Fetch error:", err);
       container.innerHTML = "Error loading project data.";
-      console.error(err);
     });
 });
