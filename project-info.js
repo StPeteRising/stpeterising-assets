@@ -3,23 +3,40 @@ document.addEventListener("DOMContentLoaded", () => {
   const projectName = document.getElementById('page-title')?.textContent.trim() || '';
   const container = document.getElementById("project-info");
 
-  if (!container) return;
+  if (!container) {
+    console.error("Container element with id 'project-info' not found.");
+    return;
+  }
+
+  console.log("Starting fetch for project:", projectName);
 
   fetch(sheetURL)
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Network response was not ok (${response.status})`);
+      }
+      return response.json();
+    })
     .then(data => {
+      console.log("Data fetched:", data.length, "rows");
+
       if (!projectName) {
+        console.warn("Project name not specified.");
         container.innerHTML = "Project name not specified.";
         return;
       }
 
       const project = data.find(p => p["Project Name"] === projectName);
+
       if (!project) {
+        console.error("Project not found for:", projectName);
         container.innerHTML = "Project not found.";
         return;
       }
 
-      const status = project.Status.trim();
+      console.log("Found project data:", project);
+
+      const status = (project.Status || '').trim();
 
       const fillProposed = ['Proposed', 'Approved', 'Under Construction', 'Complete'].includes(status);
       const fillApproved = ['Approved', 'Under Construction', 'Complete'].includes(status);
@@ -53,16 +70,15 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
         </div>
         <div class="project-stats">
-          <div class="stat-block"><div class="label">Address</div><span>${project.Address}</span></div>
-          <div class="stat-block"><div class="label">Class</div><span>${project.Class}</span></div>
-          <div class="stat-block"><div class="label">Floors</div><span>${project.Floors}</span></div>
-          <div class="stat-block"><div class="label">Units</div><span>${project.Units}</span></div>
-          <div class="stat-block"><div class="label">Completion</div><span>${project.Completion}</span></div>
+          <div class="stat-block"><div class="label">Address</div><span>${project.Address || ''}</span></div>
+          <div class="stat-block"><div class="label">Class</div><span>${project.Class || ''}</span></div>
+          <div class="stat-block"><div class="label">Floors</div><span>${project.Floors || ''}</span></div>
+          <div class="stat-block"><div class="label">Units</div><span>${project.Units || ''}</span></div>
+          <div class="stat-block"><div class="label">Completion</div><span>${project.Completion || ''}</span></div>
         </div>
         ${lastUpdatedFormatted ? `<div class="last-updated-note">Last updated on ${lastUpdatedFormatted}</div>` : ''}
       `;
 
-      // Highlight completed steps
       const steps = ['Proposed', 'Approved', 'Under Construction', 'Complete'];
       const currentIndex = steps.indexOf(status);
       steps.forEach((step, i) => {
@@ -74,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     })
     .catch(err => {
+      console.error("Fetch error:", err);
       container.innerHTML = "Error loading project data.";
-      console.error(err);
     });
 });
