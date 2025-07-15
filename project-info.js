@@ -30,12 +30,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const statusRaw = project.Status || '';
       const status = statusRaw.trim().toLowerCase();
+      const isCancelled = status === 'cancelled';
 
       console.log("Raw status from sheet:", statusRaw);
       console.log("Normalized status:", status);
-
-      // FOR TESTING: force cancelled true so you see the pill regardless of actual status
-      const isCancelled = true; // CHANGE TO: (status === 'cancelled') when done testing
+      console.log("isCancelled?", isCancelled);
 
       const cancelledPillHtml = isCancelled
         ? `<div class="cancelled-tag">Cancelled</div>`
