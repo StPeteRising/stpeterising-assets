@@ -4,25 +4,24 @@
   border-radius: 12px 12px 0 0;
   font-family: inherit;
   text-align: center;
+  /* Grey out when cancelled */
+  filter: grayscale(100%);
+  opacity: 0.5;
 }
+
+.project-status-wrapper:not(.cancelled) {
+  filter: none;
+  opacity: 1;
+}
+
 .project-status-label {
   font-weight: 700;
   font-size: 0.85em;
   color: #333;
   text-transform: uppercase;
-  margin-bottom: 4px;
+  margin-bottom: 12px;
 }
-.cancelled-tag {
-  display: inline-block;
-  background-color: #e03a3e; /* bright red */
-  color: white;
-  padding: 4px 12px;
-  font-weight: 700;
-  border-radius: 9999px;
-  font-size: 0.85em;
-  user-select: none;
-  margin: 12px 0 8px;
-}
+
 .status-bar-container {
   display: flex;
   border-radius: 30px;
@@ -33,36 +32,42 @@
   margin: 0 auto 8px;
   box-shadow: inset 0 0 6px rgba(0,0,0,0.1);
 }
+
 .status-segment {
   flex: 1;
   transition: background-color 0.4s ease;
 }
+
 .status-segment.unfilled {
   background-color: #e0e0e0;
 }
+
 .status-segment.proposed {
   background-color: #E6A83D;
 }
+
 .status-segment.approved {
   background-color: #009688;
 }
+
 .status-segment.under-construction {
   background-color: #0081E0;
 }
+
 .status-segment.complete {
   background-color: #00AE53;
 }
-.status-segment.cancelled {
-  background-color: #e0e0e0 !important; /* force grey when cancelled */
-}
+
 .status-segment:not(:last-child) {
   border-right: 2px solid white;
 }
+
 .status-steps-labels {
   display: flex;
   max-width: 560px;
   margin: 4px auto 0 auto;
 }
+
 .status-step-label {
   flex: 1;
   text-align: center;
@@ -73,9 +78,7 @@
   user-select: none;
   transition: color 0.3s ease;
 }
-.status-step-label.cancelled {
-  color: #aaa !important;
-}
+
 .project-stats {
   display: flex;
   flex-wrap: wrap;
@@ -87,8 +90,8 @@
   box-sizing: border-box;
   font-family: inherit;
   justify-content: center;
-  color: #333;
 }
+
 .project-stats div.stat-block {
   display: flex;
   flex-direction: column;
@@ -97,6 +100,7 @@
   white-space: normal;
   text-align: center;
 }
+
 .project-stats .label {
   font-weight: 700;
   color: #333;
@@ -106,11 +110,13 @@
   text-decoration: none;
   pointer-events: none;
 }
+
 .project-stats span {
   color: #111;
   font-size: 1em;
   text-align: center;
 }
+
 .last-updated-note {
   font-style: italic;
   font-size: 0.85em;
@@ -122,6 +128,23 @@
   text-align: right;
   font-family: inherit;
 }
+
+.cancelled-tag {
+  filter: none !important;
+  opacity: 1 !important;
+  background-color: #e03a3e !important;
+  color: white !important;
+  display: inline-block !important;
+  padding: 4px 12px !important;
+  border-radius: 9999px !important;
+  font-weight: 700 !important;
+  font-size: 0.85em !important;
+  user-select: none !important;
+  margin: 12px 0 8px !important;
+  z-index: 1;
+  position: relative;
+}
+
 @media (max-width: 480px) {
   .project-stats {
     gap: 16px 20px;
