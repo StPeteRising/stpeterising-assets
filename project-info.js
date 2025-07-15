@@ -1,3 +1,5 @@
+console.log("Project-info.js loaded");
+
 document.addEventListener("DOMContentLoaded", () => {
   const sheetURL = 'https://opensheet.elk.sh/1e7n0NgW7swUmn6hqCW2KslFgVd3RJhQRiuVSaIY3A1c/Sheet1';
   const projectName = document.getElementById('page-title')?.textContent.trim() || '';
