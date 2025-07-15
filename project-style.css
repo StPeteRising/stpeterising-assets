@@ -1,37 +1,28 @@
-#project-info {
-  max-width: 560px;
-  font-family: Arial, sans-serif;
-  margin: 40px auto;
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  padding: 20px;
-  background: #f8f8f8;
-}
-
 .project-status-wrapper {
-  margin-bottom: 8px;
+  background: #f8f8f8;
+  padding: 20px 20px 8px;
+  border-radius: 12px 12px 0 0;
+  font-family: inherit;
   text-align: center;
 }
 
 .project-status-label {
   font-weight: 700;
-  font-size: 1em;
+  font-size: 0.85em;
   color: #333;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
-/* Cancelled pill */
 .cancelled-tag {
-  display: inline-block;
   background-color: #d9534f;
   color: white;
-  font-weight: 700;
-  font-size: 0.9em;
+  font-weight: bold;
   padding: 4px 16px;
   border-radius: 16px;
-  user-select: none;
-  margin-bottom: 12px;
+  margin: 8px auto 12px;
+  display: inline-block;
+  font-size: 0.85em;
 }
 
 .status-bar-container {
@@ -41,14 +32,17 @@
   height: 20px;
   width: 100%;
   max-width: 560px;
+  margin: 0 auto 8px;
   box-shadow: inset 0 0 6px rgba(0,0,0,0.1);
-  background-color: #ccc;
-  margin: 0 auto;
 }
 
-/* Default grey bar for unfilled segments */
+.status-segment {
+  flex: 1;
+  transition: background-color 0.4s ease;
+}
+
 .status-segment.unfilled {
-  background-color: #ccc !important;
+  background-color: #e0e0e0;
 }
 
 .status-segment.proposed {
@@ -90,36 +84,40 @@
 
 .project-stats {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 24px 32px;
-  background: #eee;
+  background: #f8f8f8;
   padding: 16px 20px 20px;
   border-radius: 0 0 12px 12px;
   width: 100%;
   box-sizing: border-box;
   font-family: inherit;
-  justify-content: flex-start;
-  color: #888;
-  overflow-x: auto;
+  justify-content: center;
 }
 
-.stat-block {
+.project-stats .stat-block {
   display: flex;
-  flex-direction: column; /* stack label above value */
+  flex-direction: column;
   align-items: center;
-  min-width: 80px;
-  white-space: nowrap;
+  min-width: 100px;
+  white-space: normal;
   text-align: center;
-  flex-shrink: 1;
 }
 
-.label {
+.project-stats .label {
   font-weight: 700;
+  color: #333;
   font-size: 0.85em;
   text-transform: uppercase;
-  color: #888;
+  margin-bottom: 4px;
+  text-decoration: none;
   pointer-events: none;
-  margin-bottom: 6px;
+}
+
+.project-stats span {
+  color: #111;
+  font-size: 1em;
+  text-align: center;
 }
 
 .last-updated-note {
@@ -131,23 +129,26 @@
   margin-left: auto;
   margin-right: 0;
   text-align: right;
+  font-family: inherit;
 }
 
-/* Responsive adjustments */
 @media (max-width: 480px) {
   .project-stats {
     gap: 16px 20px;
   }
-  .stat-block {
+
+  .project-stats .stat-block {
     flex: 1 1 100%;
     min-width: auto;
   }
+
   .status-steps-labels {
     max-width: 100%;
     margin: 8px auto 0 auto;
     justify-content: space-between;
     flex-wrap: nowrap;
   }
+
   .status-step-label {
     flex: 1 1 auto;
     padding: 0 6px;
