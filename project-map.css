@@ -1,0 +1,23 @@
+#map {
+  height: 100vh;
+  width: 100%;
+}
+
+.popup-content {
+  font-family: sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.popup-title {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.popup-content img {
+  width: 100%;
+  max-width: 240px;
+  margin-top: 10px;
+  border-radius: 8px;
+}
