@@ -1,53 +1,61 @@
-const map = L.map('map').setView([27.7676, -82.6403], 14); // Center on St. Pete
+document.addEventListener("DOMContentLoaded", () => {
+  const sheetURL = 'https://opensheet.elk.sh/1e7n0NgW7swUmn6hqCW2KslFgVd3RJhQRiuVSaIY3A1c/Sheet1';
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap contributors'
-}).addTo(map);
+  const statusColors = {
+    Proposed: 'yellow',
+    Approved: 'green',
+    "Under Construction": 'blue',
+    Complete: 'gray',
+    Cancelled: 'red'
+  };
 
-const sheetUrl = 'https://opensheet.elk.sh/1e7n0NgW7swUmn6hqCW2KslFgVd3RJhQRiuVSaIY3A1c/Sheet1';
+  const map = L.map('project-map').setView([27.773, -82.64], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
 
-const statusColors = {
-  'Proposed': 'gold',
-  'Approved': 'green',
-  'Under Construction': 'blue',
-  'Complete': 'gray',
-  'Cancelled': 'red'
-};
+  fetch(sheetURL)
+    .then(res => res.json())
+    .then(data => {
+      data.forEach(project => {
+        const lat = parseFloat(project.Lat);
+        const lng = parseFloat(project.Lng);
+        const status = project.Status;
+        const color = statusColors[status] || 'gray';
 
-fetch(sheetUrl)
-  .then(res => res.json())
-  .then(data => {
-    data.forEach(project => {
-      const lat = parseFloat(project.Latitude);
-      const lng = parseFloat(project.Longitude);
-      if (isNaN(lat) || isNaN(lng)) return;
+        if (!isNaN(lat) && !isNaN(lng)) {
+          const marker = L.circleMarker([lat, lng], {
+            radius: 8,
+            fillColor: color,
+            color: '#333',
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.9
+          });
 
-      const color = statusColors[project.Status] || 'black';
+          const popupHtml = `
+            <div class="popup-content">
+              <div class="popup-title">${project["Project Name"]}</div>
+              <div><strong>Address:</strong> ${project.Address || ''}</div>
+              <div><strong>Class:</strong> ${project.Class || ''}</div>
+              <div><strong>Floors:</strong> ${project.Floors || ''}</div>
+              <div><strong>Units:</strong> ${project.Units || ''}</div>
+              <div><strong>Completion:</strong> ${project.Completion || ''}</div>
+              ${project.Rendering ? `<img src="${project.Rendering}" alt="Rendering" style="max-width:100%;margin-top:8px;">` : ''}
+              ${project.Slug ? `
+                <div style="margin-top: 8px;">
+                  <a href="https://stpeterising.com/${project.Slug}" target="_blank" style="color: #007BFF; font-weight: bold; text-decoration: underline;">
+                    View Project Page →
+                  </a>
+                </div>` : ''}
+            </div>
+          `;
 
-      const marker = L.circleMarker([lat, lng], {
-        radius: 8,
-        fillColor: color,
-        color: '#000',
-        weight: 1,
-        opacity: 1,
-        fillOpacity: 0.9
-      }).addTo(map);
-
-      const popupHtml = `
-        <div class="popup-content">
-          <div class="popup-title">${project["Project Name"]}</div>
-          <div><strong>Address:</strong> ${project.Address || ''}</div>
-          <div><strong>Class:</strong> ${project.Class || ''}</div>
-          <div><strong>Floors:</strong> ${project.Floors || ''}</div>
-          <div><strong>Units:</strong> ${project.Units || ''}</div>
-          <div><strong>Completion:</strong> ${project.Completion || ''}</div>
-          ${project.Rendering ? `<img src="${project.Rendering}" alt="Rendering">` : ''}
-        </div>
-      `;
-
-      marker.bindPopup(popupHtml);
+          marker.bindPopup(popupHtml).addTo(map);
+        }
+      });
+    })
+    .catch(err => {
+      console.error("Error loading map data:", err);
     });
-  })
-  .catch(err => {
-    console.error("Error loading project data:", err);
-  });
+});
