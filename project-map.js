@@ -20,8 +20,10 @@ document.addEventListener("DOMContentLoaded", () => {
       data.forEach(project => {
         const lat = parseFloat(project.Lat);
         const lng = parseFloat(project.Lng);
-        const status = project.Status;
+        const status = (project.Status || '').trim();
         const color = statusColors[status] || 'gray';
+
+        console.log(`Project: ${project["Project Name"]}, Status: ${status}, Lat: ${lat}, Lng: ${lng}`);
 
         if (!isNaN(lat) && !isNaN(lng)) {
           const marker = L.circleMarker([lat, lng], {
@@ -44,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
               ${project.Rendering ? `<img src="${project.Rendering}" alt="Rendering" style="max-width:100%;margin-top:8px;">` : ''}
               ${project.Slug ? `
                 <div style="margin-top: 8px;">
-                  <a href="https://stpeterising.com/${project.Slug}" target="_blank" style="color: #007BFF; font-weight: bold; text-decoration: underline;">
+                  <a href="https://stpeterising.com/${project.Slug}" target="_blank" rel="noopener noreferrer" style="color: #007BFF; font-weight: bold; text-decoration: underline;">
                     View Project Page →
                   </a>
                 </div>` : ''}
