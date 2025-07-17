@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   const sheetURL = 'https://opensheet.elk.sh/1e7n0NgW7swUmn6hqCW2KslFgVd3RJhQRiuVSaIY3A1c/Sheet1';
-  const mapboxToken = 'sk.eyJ1Ijoic3RwZXRlcmlzaW5nIiwiYSI6ImNtZDZwemt6cDAydG8ycm85Zmhhajhiem8ifQ.tg8plScK5O-d59FvIiJ5sw'; // Replace with your actual Mapbox token
+  const mapboxToken = 'pk.eyJ1Ijoic3RwZXRlcmlzaW5nIiwiYSI6ImNtZDZxb2lweDBib2Mya3BzZ2xrdmgxMDEifQ.QWBg7S51ggQ_jemRmD7nRw'; // Replace with your actual Mapbox token
 
   const statusColors = {
     Proposed: 'yellow',
