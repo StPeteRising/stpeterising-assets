@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const markers = L.markerClusterGroup({
     chunkedLoading: true,
-    maxClusterRadius: 25,
+    maxClusterRadius: 15,
     spiderfyOnMaxZoom: true,
   });
 
