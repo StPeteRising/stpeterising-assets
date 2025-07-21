@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="stat-block"><div class="label">Completion</div><span>${project.Completion || ''}</span></div>
         </div>
 
-        <div style="margin-top: 16px; font-size: 14px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="margin-top: 4px; font-size: 14px; display: flex; justify-content: space-between; align-items: center;">
           <a href="mailto:brian@stpeterising.com?subject=Reporting%20a%20Data%20Error" style="color: #666; text-decoration: underline;">
             Report a data error
           </a>
