@@ -74,16 +74,18 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="stat-block"><div class="label">Completion</div><span>${project.Completion || ''}</span></div>
         </div>
 
-        <div style="margin-top: 4px; margin-bottom: 12px; font-size: 14px; display: flex; justify-content: space-between; align-items: center;">
-          <a href="mailto:brian@stpeterising.com?subject=Reporting%20a%20Data%20Error" style="color: #666; text-decoration: underline;">
-            Report a data error
-          </a>
-          ${lastUpdatedFormatted ? `<span style="color: #666;">Last updated on ${lastUpdatedFormatted}</span>` : ''}
+        <div style="margin-top: 8px; margin-bottom: 12px; font-size: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="#" id="report-error-toggle" style="color: #666; text-decoration: underline;">Report a data error</a>
+            ${lastUpdatedFormatted ? `<span style="color: #666;">Last updated on ${lastUpdatedFormatted}</span>` : ''}
+          </div>
+          <div id="report-error-form" style="margin-top: 12px; display: none;">
+            <iframe src="https://docs.google.com/forms/d/e/1FAIpQLScqt3CnYXJRwijtqSybvvk_j0TLS9_gZSTvdLaJhNBZBXLipQ/viewform?embedded=true" width="100%" height="220" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+          </div>
         </div>
       `;
 
       if (!isCancelled) {
-        // Highlight current status label
         const steps = ['proposed', 'approved', 'under construction', 'complete'];
         const currentIndex = steps.indexOf(status);
         steps.forEach((step, i) => {
@@ -91,6 +93,17 @@ document.addEventListener("DOMContentLoaded", () => {
             const labels = container.querySelectorAll('.status-step-label');
             if (labels[i]) labels[i].style.color = "#000";
           }
+        });
+      }
+
+      // Toggle the form visibility
+      const toggleLink = document.getElementById("report-error-toggle");
+      const formContainer = document.getElementById("report-error-form");
+
+      if (toggleLink && formContainer) {
+        toggleLink.addEventListener("click", (e) => {
+          e.preventDefault();
+          formContainer.style.display = formContainer.style.display === "none" ? "block" : "none";
         });
       }
     })
