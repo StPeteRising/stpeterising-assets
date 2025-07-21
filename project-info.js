@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Your Google Apps Script Web App URL here:
-  const scriptURL = 'YOUR_WEB_APP_URL_HERE';
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbwu3EaIFnqf0Idj3CyieOpjw0xtfCcdfs5_GuD2FMH7-VwvXtATO0YUrhCk0VS7mvE/exec';
 
   fetch(sheetURL)
     .then(response => {
