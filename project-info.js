@@ -8,6 +8,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+  // Your Google Apps Script Web App URL here:
+  const scriptURL = 'YOUR_WEB_APP_URL_HERE';
+
   fetch(sheetURL)
     .then(response => {
       if (!response.ok) throw new Error(`Network error: ${response.status}`);
@@ -79,15 +82,24 @@ document.addEventListener("DOMContentLoaded", () => {
             <a href="#" id="report-error-toggle" style="color: #666; text-decoration: underline;">Report a data error</a>
             ${lastUpdatedFormatted ? `<span style="color: #666;">Last updated on ${lastUpdatedFormatted}</span>` : ''}
           </div>
-          <div id="report-error-form" style="margin-top: 12px; display: none;">
-            <iframe
-              src="https://docs.google.com/forms/d/e/1FAIpQLScqt3CnYXJRwijtqSybvvk_j0TLS9_gZSTvdLaJhNBZBXLipQ/viewform?embedded=true&entry.2094181367="
-              width="100%"
-              height="500"
-              frameborder="0"
-              marginheight="0"
-              marginwidth="0"
-            >Loading…</iframe>
+        </div>
+
+        <!-- Popup Modal HTML -->
+        <div id="data-error-modal" style="
+          display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%;
+          background: rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+          <div style="
+            background:#fff; padding:20px; border-radius:6px; width:90%; max-width:400px;
+            box-shadow:0 0 15px rgba(0,0,0,0.3); position:relative;">
+            <span id="data-error-close" style="
+              position:absolute; top:8px; right:12px; font-weight:bold; font-size:24px; cursor:pointer;">&times;</span>
+            <h3>Report a Data Error</h3>
+            <textarea id="data-error-message" placeholder="Describe the data issue..." style="
+              width:100%; height:100px; margin-bottom:12px; font-size:14px; resize:vertical;"></textarea>
+            <button id="data-error-submit" style="
+              padding:8px 16px; font-size:14px; cursor:pointer;">Submit</button>
+            <div id="data-error-success" style="color:green; margin-top:10px; font-weight:600; display:none;">Thank you! Your report was sent.</div>
+            <div id="data-error-error" style="color:red; margin-top:10px; font-weight:600; display:none;">Oops! Something went wrong. Please try again.</div>
           </div>
         </div>
       `;
@@ -103,23 +115,69 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
-      // Toggle the form and set the page URL dynamically
+      // Popup form elements
       const toggleLink = document.getElementById("report-error-toggle");
-      const formContainer = document.getElementById("report-error-form");
-      const iframe = formContainer.querySelector("iframe");
+      const modal = document.getElementById("data-error-modal");
+      const closeBtn = document.getElementById("data-error-close");
+      const submitBtn = document.getElementById("data-error-submit");
+      const messageBox = document.getElementById("data-error-message");
+      const successMsg = document.getElementById("data-error-success");
+      const errorMsg = document.getElementById("data-error-error");
 
-      if (toggleLink && formContainer && iframe) {
-        toggleLink.addEventListener("click", (e) => {
-          e.preventDefault();
+      // Open modal on link click
+      toggleLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        successMsg.style.display = "none";
+        errorMsg.style.display = "none";
+        messageBox.value = "";
+        modal.style.display = "flex";
+        messageBox.focus();
+      });
 
-          // Append the current page URL encoded to the iframe src
-          const baseSrc = "https://docs.google.com/forms/d/e/1FAIpQLScqt3CnYXJRwijtqSybvvk_j0TLS9_gZSTvdLaJhNBZBXLipQ/viewform?embedded=true&entry.2094181367=";
-          iframe.src = baseSrc + encodeURIComponent(window.location.href);
+      // Close modal on X click
+      closeBtn.addEventListener("click", () => {
+        modal.style.display = "none";
+      });
 
-          // Toggle visibility
-          formContainer.style.display = formContainer.style.display === "none" ? "block" : "none";
-        });
-      }
+      // Close modal on clicking outside modal content
+      window.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          modal.style.display = "none";
+        }
+      });
+
+      // Submit form handler
+      submitBtn.addEventListener("click", () => {
+        const message = messageBox.value.trim();
+        if (!message) {
+          alert("Please enter a description.");
+          return;
+        }
+
+        const data = new URLSearchParams();
+        data.append("pageUrl", window.location.href);
+        data.append("message", message);
+
+        fetch(scriptURL, {
+          method: "POST",
+          body: data,
+        })
+          .then(response => response.json())
+          .then(json => {
+            if (json.result === "success") {
+              successMsg.style.display = "block";
+              errorMsg.style.display = "none";
+              messageBox.value = "";
+            } else {
+              throw new Error(json.error || "Unknown error");
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            successMsg.style.display = "none";
+            errorMsg.style.display = "block";
+          });
+      });
     })
     .catch(err => {
       console.error(err);
