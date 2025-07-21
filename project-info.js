@@ -75,6 +75,11 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
 
         ${lastUpdatedFormatted ? `<div class="last-updated-note">Last updated on ${lastUpdatedFormatted}</div>` : ''}
+        <p style="margin-top: 16px; font-size: 14px; text-align: right;">
+          <a href="mailto:brian@stpeterising.com?subject=Reporting%20a%20Data%20Error" style="color: #666; text-decoration: underline;">
+            Report a data error
+          </a>
+        </p>
       `;
 
       if (!isCancelled) {
