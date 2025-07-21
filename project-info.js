@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ${lastUpdatedFormatted ? `<span style="color: #666;">Last updated on ${lastUpdatedFormatted}</span>` : ''}
           </div>
           <div id="report-error-form" style="margin-top: 12px; display: none;">
-            <iframe src="https://docs.google.com/forms/d/e/1FAIpQLScqt3CnYXJRwijtqSybvvk_j0TLS9_gZSTvdLaJhNBZBXLipQ/viewform?embedded=true" width="100%" height="220" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+            <iframe src="https://docs.google.com/forms/d/e/1FAIpQLScqt3CnYXJRwijtqSybvvk_j0TLS9_gZSTvdLaJhNBZBXLipQ/viewform?embedded=true" width="100%" height="500" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
           </div>
         </div>
       `;
