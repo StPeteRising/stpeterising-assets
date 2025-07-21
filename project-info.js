@@ -80,7 +80,14 @@ document.addEventListener("DOMContentLoaded", () => {
             ${lastUpdatedFormatted ? `<span style="color: #666;">Last updated on ${lastUpdatedFormatted}</span>` : ''}
           </div>
           <div id="report-error-form" style="margin-top: 12px; display: none;">
-            <iframe src="https://docs.google.com/forms/d/e/1FAIpQLScqt3CnYXJRwijtqSybvvk_j0TLS9_gZSTvdLaJhNBZBXLipQ/viewform?embedded=true" width="100%" height="500" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+            <iframe
+              src="https://docs.google.com/forms/d/e/1FAIpQLScqt3CnYXJRwijtqSybvvk_j0TLS9_gZSTvdLaJhNBZBXLipQ/viewform?embedded=true&entry.2094181367="
+              width="100%"
+              height="500"
+              frameborder="0"
+              marginheight="0"
+              marginwidth="0"
+            >Loading…</iframe>
           </div>
         </div>
       `;
@@ -96,13 +103,20 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
-      // Toggle the form visibility
+      // Toggle the form and set the page URL dynamically
       const toggleLink = document.getElementById("report-error-toggle");
       const formContainer = document.getElementById("report-error-form");
+      const iframe = formContainer.querySelector("iframe");
 
-      if (toggleLink && formContainer) {
+      if (toggleLink && formContainer && iframe) {
         toggleLink.addEventListener("click", (e) => {
           e.preventDefault();
+
+          // Append the current page URL encoded to the iframe src
+          const baseSrc = "https://docs.google.com/forms/d/e/1FAIpQLScqt3CnYXJRwijtqSybvvk_j0TLS9_gZSTvdLaJhNBZBXLipQ/viewform?embedded=true&entry.2094181367=";
+          iframe.src = baseSrc + encodeURIComponent(window.location.href);
+
+          // Toggle visibility
           formContainer.style.display = formContainer.style.display === "none" ? "block" : "none";
         });
       }
