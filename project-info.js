@@ -150,6 +150,10 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
+        submitBtn.disabled = true;
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = "Sending...";
+
         const data = new URLSearchParams();
         data.append("pageUrl", window.location.href);
         data.append("message", message);
@@ -172,6 +176,10 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error(err);
             successMsg.style.display = "none";
             errorMsg.style.display = "block";
+          })
+          .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
           });
       });
     })
