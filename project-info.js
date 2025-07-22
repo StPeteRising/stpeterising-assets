@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // Your Google Apps Script Web App URL here:
   const scriptURL = 'https://script.google.com/macros/s/AKfycbwu3EaIFnqf0Idj3CyieOpjw0xtfCcdfs5_GuD2FMH7-VwvXtATO0YUrhCk0VS7mvE/exec';
 
   fetch(sheetURL)
@@ -94,6 +93,8 @@ document.addEventListener("DOMContentLoaded", () => {
             <span id="data-error-close" style="
               position:absolute; top:8px; right:12px; font-weight:bold; font-size:24px; cursor:pointer;">&times;</span>
             <h3>Report a Data Error</h3>
+            <input id="data-error-email" type="email" placeholder="Your email (optional)" style="
+              width:100%; margin-bottom:12px; font-size:14px;" />
             <textarea id="data-error-message" placeholder="Describe the data issue..." style="
               width:100%; height:100px; margin-bottom:12px; font-size:14px; resize:vertical;"></textarea>
             <button id="data-error-submit" style="
@@ -108,9 +109,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const steps = ['proposed', 'approved', 'under construction', 'complete'];
         const currentIndex = steps.indexOf(status);
         steps.forEach((step, i) => {
-          if (i <= currentIndex) {
-            const labels = container.querySelectorAll('.status-step-label');
-            if (labels[i]) labels[i].style.color = "#000";
+          const labels = container.querySelectorAll('.status-step-label');
+          if (i <= currentIndex && labels[i]) {
+            labels[i].style.color = "#000";
           }
         });
       }
@@ -121,34 +122,33 @@ document.addEventListener("DOMContentLoaded", () => {
       const closeBtn = document.getElementById("data-error-close");
       const submitBtn = document.getElementById("data-error-submit");
       const messageBox = document.getElementById("data-error-message");
+      const emailBox = document.getElementById("data-error-email");
       const successMsg = document.getElementById("data-error-success");
       const errorMsg = document.getElementById("data-error-error");
 
-      // Open modal on link click
       toggleLink.addEventListener("click", (e) => {
         e.preventDefault();
         successMsg.style.display = "none";
         errorMsg.style.display = "none";
         messageBox.value = "";
+        emailBox.value = "";
         modal.style.display = "flex";
         messageBox.focus();
       });
 
-      // Close modal on X click
       closeBtn.addEventListener("click", () => {
         modal.style.display = "none";
       });
 
-      // Close modal on clicking outside modal content
       window.addEventListener("click", (e) => {
         if (e.target === modal) {
           modal.style.display = "none";
         }
       });
 
-      // Submit form handler
       submitBtn.addEventListener("click", () => {
         const message = messageBox.value.trim();
+        const email = emailBox.value.trim();
         if (!message) {
           alert("Please enter a description.");
           return;
@@ -157,6 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const data = new URLSearchParams();
         data.append("pageUrl", window.location.href);
         data.append("message", message);
+        data.append("email", email);
 
         fetch(scriptURL, {
           method: "POST",
@@ -168,6 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
               successMsg.style.display = "block";
               errorMsg.style.display = "none";
               messageBox.value = "";
+              emailBox.value = "";
             } else {
               throw new Error(json.error || "Unknown error");
             }
