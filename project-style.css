@@ -17,16 +17,16 @@
 
 .cancelled-tag {
   display: inline-block;
-  background-color: #C62828; /* Softer rich red */
+  background-color: #C62828;
   color: white;
-  font-weight: 700; /* Less bold */
+  font-weight: 700;
   font-size: 1em;
   padding: 6px 14px;
   border-radius: 12px;
   margin-bottom: 8px;
   user-select: none;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  letter-spacing: 0.06em; /* Slightly spaced letters */
+  letter-spacing: 0.06em;
 }
 
 .status-bar-container {
@@ -173,5 +173,108 @@
     white-space: normal;
     line-height: 1.2em;
     text-align: center;
+  }
+}
+
+/* ===== Report a Data Error Modal ===== */
+
+#reportErrorModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+#reportErrorModal .modal-content {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  font-family: inherit;
+  color: #111;
+  text-align: left;
+}
+
+#reportErrorModal h2 {
+  font-size: 1.25em;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+#reportErrorModal textarea {
+  width: 100%;
+  height: 100px;
+  resize: vertical;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-family: inherit;
+  font-size: 1em;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+#reportErrorModal .button-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+#reportErrorModal button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.95em;
+  transition: background-color 0.3s ease;
+}
+
+#reportErrorModal .cancel-button {
+  background-color: #eee;
+  color: #333;
+}
+
+#reportErrorModal .submit-button {
+  background-color: #0081E0;
+  color: white;
+}
+
+#reportErrorModal .submit-button:hover {
+  background-color: #006dc0;
+}
+
+#reportErrorModal .cancel-button:hover {
+  background-color: #ddd;
+}
+
+@media (max-width: 480px) {
+  #reportErrorModal .modal-content {
+    padding: 16px;
+  }
+
+  #reportErrorModal h2 {
+    font-size: 1.1em;
+  }
+
+  #reportErrorModal .button-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  #reportErrorModal button {
+    width: 100%;
   }
 }
