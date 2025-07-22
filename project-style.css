@@ -1,3 +1,5 @@
+/* === Project Status & Stats Styles === */
+
 .project-status-wrapper {
   background: #f8f8f8;
   padding: 20px 20px 8px;
@@ -17,7 +19,7 @@
 
 .cancelled-tag {
   display: inline-block;
-  background-color: #C62828;
+  background-color: #C62828; /* Softer rich red */
   color: white;
   font-weight: 700;
   font-size: 1em;
@@ -153,6 +155,7 @@
   font-family: inherit;
 }
 
+/* === Responsive tweaks for project info === */
 @media (max-width: 480px) {
   .project-stats {
     gap: 16px 20px;
@@ -176,105 +179,147 @@
   }
 }
 
-/* ===== Report a Data Error Modal ===== */
+/* === Report a Data Error Modal Styling === */
 
-#reportErrorModal {
+/* Modal overlay */
+#data-error-modal {
+  display: none; /* Hidden by default */
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
   z-index: 9999;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-#reportErrorModal .modal-content {
-  background: #fff;
-  border-radius: 16px;
-  padding: 24px;
-  max-width: 500px;
-  width: 100%;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  font-family: inherit;
-  color: #111;
-  text-align: left;
-}
-
-#reportErrorModal h2 {
-  font-size: 1.25em;
-  font-weight: 700;
-  margin-bottom: 12px;
-  color: #333;
-}
-
-#reportErrorModal textarea {
-  width: 100%;
-  height: 100px;
-  resize: vertical;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-family: inherit;
-  font-size: 1em;
-  margin-bottom: 16px;
-  box-sizing: border-box;
-}
-
-#reportErrorModal .button-row {
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  /* Flex center the modal content */
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  padding: 20px; /* Padding so modal doesn't hug screen edges on small */
+  box-sizing: border-box;
 }
 
-#reportErrorModal button {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
+/* Modal content box */
+#data-error-modal > div {
+  background: #fff;
+  border-radius: 10px;
+  max-width: 420px;
+  width: 100%;
+  padding: 24px 30px 30px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  position: relative;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #222;
+}
+
+/* Close button */
+#data-error-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1;
+  color: #666;
   cursor: pointer;
-  font-family: inherit;
-  font-size: 0.95em;
-  transition: background-color 0.3s ease;
+  user-select: none;
+  transition: color 0.2s ease-in-out;
 }
 
-#reportErrorModal .cancel-button {
-  background-color: #eee;
+#data-error-close:hover {
+  color: #000;
+}
+
+/* Modal heading */
+#data-error-modal h3 {
+  margin-top: 0;
+  margin-bottom: 18px;
+  font-size: 1.5rem;
+  font-weight: 700;
   color: #333;
+  text-align: center;
 }
 
-#reportErrorModal .submit-button {
+/* Textarea */
+#data-error-message {
+  width: 100%;
+  height: 110px;
+  resize: vertical;
+  font-size: 1rem;
+  padding: 10px 12px;
+  border: 1.8px solid #ccc;
+  border-radius: 6px;
+  font-family: inherit;
+  color: #444;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+#data-error-message:focus {
+  outline: none;
+  border-color: #0081E0; /* your blue */
+  box-shadow: 0 0 5px rgba(0, 129, 224, 0.6);
+}
+
+/* Submit button */
+#data-error-submit {
   background-color: #0081E0;
   color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.3s ease;
+  box-sizing: border-box;
 }
 
-#reportErrorModal .submit-button:hover {
-  background-color: #006dc0;
+#data-error-submit:hover,
+#data-error-submit:focus {
+  background-color: #005f9e;
+  outline: none;
 }
 
-#reportErrorModal .cancel-button:hover {
-  background-color: #ddd;
+/* Success and error messages */
+#data-error-success,
+#data-error-error {
+  margin-top: 14px;
+  font-weight: 600;
+  font-size: 1rem;
+  text-align: center;
+  user-select: none;
 }
 
+#data-error-success {
+  color: #00AE53; /* green */
+}
+
+#data-error-error {
+  color: #C62828; /* red */
+}
+
+/* Responsive tweaks for modal */
 @media (max-width: 480px) {
-  #reportErrorModal .modal-content {
-    padding: 16px;
+  #data-error-modal > div {
+    padding: 20px 18px 24px;
+    max-width: 100%;
   }
 
-  #reportErrorModal h2 {
-    font-size: 1.1em;
+  #data-error-message {
+    height: 90px;
+    font-size: 0.9rem;
   }
 
-  #reportErrorModal .button-row {
-    flex-direction: column;
-    gap: 10px;
+  #data-error-submit {
+    font-size: 0.95rem;
+    padding: 10px 20px;
   }
 
-  #reportErrorModal button {
-    width: 100%;
+  #data-error-close {
+    top: 10px;
+    right: 10px;
+    font-size: 26px;
   }
 }
