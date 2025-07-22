@@ -93,8 +93,6 @@ document.addEventListener("DOMContentLoaded", () => {
             <span id="data-error-close" style="
               position:absolute; top:8px; right:12px; font-weight:bold; font-size:24px; cursor:pointer;">&times;</span>
             <h3>Report a Data Error</h3>
-            <input id="data-error-email" type="email" placeholder="Your email (optional)" style="
-              width:100%; margin-bottom:12px; font-size:14px;" />
             <textarea id="data-error-message" placeholder="Describe the data issue..." style="
               width:100%; height:100px; margin-bottom:12px; font-size:14px; resize:vertical;"></textarea>
             <button id="data-error-submit" style="
@@ -122,7 +120,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const closeBtn = document.getElementById("data-error-close");
       const submitBtn = document.getElementById("data-error-submit");
       const messageBox = document.getElementById("data-error-message");
-      const emailBox = document.getElementById("data-error-email");
       const successMsg = document.getElementById("data-error-success");
       const errorMsg = document.getElementById("data-error-error");
 
@@ -131,7 +128,6 @@ document.addEventListener("DOMContentLoaded", () => {
         successMsg.style.display = "none";
         errorMsg.style.display = "none";
         messageBox.value = "";
-        emailBox.value = "";
         modal.style.display = "flex";
         messageBox.focus();
       });
@@ -148,16 +144,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       submitBtn.addEventListener("click", () => {
         const message = messageBox.value.trim();
-        const email = emailBox.value.trim();
         if (!message) {
           alert("Please enter a description.");
+          messageBox.focus();
           return;
         }
 
         const data = new URLSearchParams();
         data.append("pageUrl", window.location.href);
         data.append("message", message);
-        data.append("email", email);
 
         fetch(scriptURL, {
           method: "POST",
@@ -169,7 +164,6 @@ document.addEventListener("DOMContentLoaded", () => {
               successMsg.style.display = "block";
               errorMsg.style.display = "none";
               messageBox.value = "";
-              emailBox.value = "";
             } else {
               throw new Error(json.error || "Unknown error");
             }
