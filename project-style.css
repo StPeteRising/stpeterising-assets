@@ -136,7 +136,7 @@
   text-align: center;
   white-space: normal;
   word-break: break-word;
-  max-width: 20ch; /* wrap text longer than ~20 chars */
+  max-width: 25ch; /* wrap text longer than ~25 chars */
   margin: 0 auto;
 }
 
