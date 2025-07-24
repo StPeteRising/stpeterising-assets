@@ -115,12 +115,12 @@
 .project-stats div.stat-block {
   display: flex;
   flex-direction: column; /* label above value */
-  align-items: flex-start;
+  align-items: center;    /* center horizontally */
   flex-shrink: 1;
   min-width: 0;          /* allow shrinking */
   max-width: 180px;      /* constrain block width */
   white-space: normal;   /* allow wrapping */
-  text-align: left;
+  text-align: center;    /* center text inside */
 }
 
 .project-stats .label {
@@ -130,6 +130,7 @@
   text-transform: uppercase;
   margin-bottom: 4px;
   white-space: nowrap;  /* label stays on one line */
+  user-select: none;
 }
 
 .project-stats.greyed .label {
