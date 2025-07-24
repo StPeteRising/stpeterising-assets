@@ -92,20 +92,18 @@
   transition: color 0.3s ease;
 }
 
-/* === Project Stats Styles === */
 .project-stats {
   display: flex;
-  flex-wrap: nowrap; /* keep all blocks on one line if possible */
-  justify-content: space-between; /* spread stat blocks evenly */
-  gap: 0;
+  flex-wrap: wrap;
+  gap: 24px 32px;
   background: #f8f8f8;
   padding: 16px 20px 20px;
   border-radius: 0 0 12px 12px;
   width: 100%;
   box-sizing: border-box;
   font-family: inherit;
+  justify-content: center;
   color: inherit;
-  overflow: hidden;
 }
 
 .project-stats.greyed {
@@ -116,12 +114,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex-shrink: 1;
-  flex-basis: 0;
-  max-width: 360px;
+  min-width: 100px;
   white-space: normal;
   text-align: center;
-  position: relative;
 }
 
 .project-stats .label {
@@ -130,9 +125,8 @@
   font-size: 0.85em;
   text-transform: uppercase;
   margin-bottom: 4px;
-  white-space: nowrap; /* keep label on single line */
-  user-select: none;
-  width: 100%;
+  text-decoration: none;
+  pointer-events: none;
 }
 
 .project-stats.greyed .label {
@@ -141,30 +135,34 @@
 
 .project-stats span {
   color: #111;
-  font-size: 0.95em;
-  white-space: normal;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  max-width: none; /* allow value to be wider than label */
-  min-width: 100%; /* at least as wide as container */
-  position: relative;
+  font-size: 1em;
+  text-align: center;
 }
 
 .project-stats.greyed span {
   color: #999999;
 }
 
-/* Responsive tweaks for project info */
+.last-updated-note {
+  font-style: italic;
+  font-size: 0.85em;
+  color: #666;
+  margin-top: 12px;
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: 0;
+  text-align: right;
+  font-family: inherit;
+}
+
+/* === Responsive tweaks for project info === */
 @media (max-width: 480px) {
   .project-stats {
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: 24px 32px;
+    gap: 16px 20px;
   }
   .project-stats div.stat-block {
-    max-width: 100%;
+    flex: 1 1 100%;
     min-width: auto;
-    flex-basis: auto;
   }
   .status-steps-labels {
     max-width: 100%;
@@ -185,7 +183,7 @@
 
 /* Modal overlay */
 #data-error-modal {
-  display: none;
+  display: none; /* Hidden by default */
   position: fixed;
   z-index: 9999;
   left: 0;
@@ -193,10 +191,11 @@
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.5);
+  /* Flex center the modal content */
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 20px; /* Padding so modal doesn't hug screen edges on small */
   box-sizing: border-box;
 }
 
@@ -258,7 +257,7 @@
 
 #data-error-message:focus {
   outline: none;
-  border-color: #0081E0;
+  border-color: #0081E0; /* your blue */
   box-shadow: 0 0 5px rgba(0, 129, 224, 0.6);
 }
 
@@ -294,11 +293,11 @@
 }
 
 #data-error-success {
-  color: #00AE53;
+  color: #00AE53; /* green */
 }
 
 #data-error-error {
-  color: #C62828;
+  color: #C62828; /* red */
 }
 
 /* Responsive tweaks for modal */
