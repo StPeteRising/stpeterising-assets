@@ -137,6 +137,13 @@
   color: #111;
   font-size: 1em;
   text-align: center;
+
+  /* Added to constrain value width to approx 20 chars and allow wrapping */
+  display: inline-block;
+  max-width: 20ch;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .project-stats.greyed span {
