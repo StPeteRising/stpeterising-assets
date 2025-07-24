@@ -96,14 +96,14 @@
 .project-stats {
   display: flex;
   flex-wrap: nowrap; /* keep all blocks on one line if possible */
-  gap: 24px 32px;
+  justify-content: space-between; /* spread stat blocks evenly */
+  gap: 0; /* gap unnecessary with space-between */
   background: #f8f8f8;
   padding: 16px 20px 20px;
   border-radius: 0 0 12px 12px;
   width: 100%;
   box-sizing: border-box;
   font-family: inherit;
-  justify-content: flex-start;
   color: inherit;
   overflow: hidden; /* prevent horizontal scrollbar */
 }
@@ -117,10 +117,10 @@
   flex-direction: column; /* label above value */
   align-items: center;    /* center horizontally */
   flex-shrink: 1;
-  min-width: 0;          /* allow shrinking */
-  max-width: 180px;      /* constrain block width */
-  white-space: normal;   /* allow wrapping */
-  text-align: center;    /* center text inside */
+  flex-basis: 0;          /* allow equal width distribution */
+  max-width: 180px;       /* optional max width */
+  white-space: normal;    /* allow wrapping */
+  text-align: center;     /* center text inside */
 }
 
 .project-stats .label {
@@ -154,10 +154,13 @@
 @media (max-width: 480px) {
   .project-stats {
     flex-wrap: wrap; /* allow wrapping on narrow screens */
+    justify-content: flex-start;
+    gap: 24px 32px;
   }
   .project-stats div.stat-block {
     max-width: 100%;
     min-width: auto;
+    flex-basis: auto;
   }
   .status-steps-labels {
     max-width: 100%;
