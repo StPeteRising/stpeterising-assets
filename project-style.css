@@ -97,7 +97,7 @@
   display: flex;
   flex-wrap: nowrap; /* keep all blocks on one line if possible */
   justify-content: space-between; /* spread stat blocks evenly */
-  gap: 0; /* gap unnecessary with space-between */
+  gap: 0;
   background: #f8f8f8;
   padding: 16px 20px 20px;
   border-radius: 0 0 12px 12px;
@@ -105,7 +105,7 @@
   box-sizing: border-box;
   font-family: inherit;
   color: inherit;
-  overflow: hidden; /* prevent horizontal scrollbar */
+  overflow: hidden;
 }
 
 .project-stats.greyed {
@@ -114,13 +114,14 @@
 
 .project-stats div.stat-block {
   display: flex;
-  flex-direction: column; /* label above value */
-  align-items: center;    /* center horizontally */
+  flex-direction: column;
+  align-items: center;
   flex-shrink: 1;
-  flex-basis: 0;          /* allow equal width distribution */
-  max-width: 180px;       /* optional max width */
-  white-space: normal;    /* allow wrapping */
-  text-align: center;     /* center text inside */
+  flex-basis: 0;
+  max-width: 180px;
+  white-space: normal;
+  text-align: center;
+  position: relative;
 }
 
 .project-stats .label {
@@ -129,8 +130,9 @@
   font-size: 0.85em;
   text-transform: uppercase;
   margin-bottom: 4px;
-  white-space: nowrap;  /* label stays on one line */
+  white-space: nowrap; /* keep label on single line */
   user-select: none;
+  width: 100%;
 }
 
 .project-stats.greyed .label {
@@ -140,10 +142,12 @@
 .project-stats span {
   color: #111;
   font-size: 0.95em;
-  white-space: normal;    /* wrap long values */
-  word-break: break-word; /* break inside long words if needed */
+  white-space: normal;
+  word-break: break-word;
   overflow-wrap: break-word;
-  max-width: 100%;
+  max-width: none; /* allow value to be wider than label */
+  min-width: 100%; /* at least as wide as container */
+  position: relative;
 }
 
 .project-stats.greyed span {
@@ -153,7 +157,7 @@
 /* Responsive tweaks for project info */
 @media (max-width: 480px) {
   .project-stats {
-    flex-wrap: wrap; /* allow wrapping on narrow screens */
+    flex-wrap: wrap;
     justify-content: flex-start;
     gap: 24px 32px;
   }
@@ -181,7 +185,7 @@
 
 /* Modal overlay */
 #data-error-modal {
-  display: none; /* Hidden by default */
+  display: none;
   position: fixed;
   z-index: 9999;
   left: 0;
@@ -189,11 +193,10 @@
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.5);
-  /* Flex center the modal content */
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px; /* Padding so modal doesn't hug screen edges on small */
+  padding: 20px;
   box-sizing: border-box;
 }
 
@@ -255,7 +258,7 @@
 
 #data-error-message:focus {
   outline: none;
-  border-color: #0081E0; /* your blue */
+  border-color: #0081E0;
   box-shadow: 0 0 5px rgba(0, 129, 224, 0.6);
 }
 
@@ -291,11 +294,11 @@
 }
 
 #data-error-success {
-  color: #00AE53; /* green */
+  color: #00AE53;
 }
 
 #data-error-error {
-  color: #C62828; /* red */
+  color: #C62828;
 }
 
 /* Responsive tweaks for modal */
