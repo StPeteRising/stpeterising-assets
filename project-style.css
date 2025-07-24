@@ -92,34 +92,28 @@
   transition: color 0.3s ease;
 }
 
+/* ==== Updated Project Stats with CSS Grid ==== */
 .project-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px 32px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  grid-template-rows: auto auto; /* labels on first row, values second */
+  gap: 16px 32px;
+  justify-items: center;
   background: #f8f8f8;
   padding: 16px 20px 20px;
   border-radius: 0 0 12px 12px;
   width: 100%;
   box-sizing: border-box;
   font-family: inherit;
-  justify-content: center;
   color: inherit;
 }
 
-.project-stats.greyed {
-  color: #999999;
-}
-
 .project-stats div.stat-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 100px;
-  white-space: normal;
-  text-align: center;
+  display: contents; /* allows label and span to be direct grid children */
 }
 
 .project-stats .label {
+  grid-row: 1;
   font-weight: 700;
   color: #333;
   font-size: 0.85em;
@@ -127,6 +121,8 @@
   margin-bottom: 4px;
   text-decoration: none;
   pointer-events: none;
+  user-select: none;
+  text-align: center;
 }
 
 .project-stats.greyed .label {
@@ -134,16 +130,14 @@
 }
 
 .project-stats span {
+  grid-row: 2;
   color: #111;
   font-size: 1em;
   text-align: center;
-
-  /* Added to constrain value width to approx 20 chars and allow wrapping */
-  display: inline-block;
-  max-width: 20ch;
   white-space: normal;
   word-break: break-word;
-  overflow-wrap: break-word;
+  max-width: 20ch; /* wrap text longer than ~20 chars */
+  margin: 0 auto;
 }
 
 .project-stats.greyed span {
@@ -165,18 +159,29 @@
 /* === Responsive tweaks for project info === */
 @media (max-width: 480px) {
   .project-stats {
-    gap: 16px 20px;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+    gap: 12px 0;
+    padding: 16px 12px 20px;
   }
-  .project-stats div.stat-block {
-    flex: 1 1 100%;
-    min-width: auto;
+
+  .project-stats .label {
+    grid-row: auto;
+    margin-bottom: 2px;
   }
+
+  .project-stats span {
+    grid-row: auto;
+    max-width: 100%;
+  }
+
   .status-steps-labels {
     max-width: 100%;
     margin: 8px auto 0 auto;
     justify-content: space-between;
     flex-wrap: nowrap;
   }
+
   .status-step-label {
     flex: 1 1 auto;
     padding: 0 6px;
