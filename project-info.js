@@ -50,10 +50,19 @@ document.addEventListener("DOMContentLoaded", () => {
         ? `<span class="cancelled-tag">Cancelled</span>`
         : '';
 
-      // Determine whether to show Units or Retail Square Footage
-      const isRetail = (project.Class || '').toLowerCase() === 'retail';
-      const unitsOrSqFtLabel = isRetail ? 'Square Feet' : 'Units';
-      const unitsOrSqFtValue = isRetail ? (project['Retail Square Footage'] || '') : (project.Units || '');
+      // Dynamic label and value for Units or Square Feet based on Class
+      const classValue = (project.Class || '').toLowerCase();
+
+      let unitsOrSqFtLabel = 'Units';
+      let unitsOrSqFtValue = project.Units || '';
+
+      if (classValue === 'retail' && 'Retail Square Footage' in project) {
+        unitsOrSqFtLabel = 'Square Feet';
+        unitsOrSqFtValue = project['Retail Square Footage'] || '';
+      } else if (classValue === 'office' && 'Office Square Footage' in project) {
+        unitsOrSqFtLabel = 'Square Feet';
+        unitsOrSqFtValue = project['Office Square Footage'] || '';
+      }
 
       container.innerHTML = `
         <div class="project-status-wrapper">
