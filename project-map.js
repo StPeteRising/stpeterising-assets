@@ -54,6 +54,13 @@ document.addEventListener("DOMContentLoaded", () => {
     maxZoom: 18,
   }).addTo(map);
 
+  // Add fullscreen control
+  map.addControl(new L.Control.Fullscreen({
+    position: 'topright',  // optional
+    title: 'Toggle fullscreen',
+    titleCancel: 'Exit fullscreen',
+  }));
+
   // Create legend after map init
   createLegend(iconURLs);
 
