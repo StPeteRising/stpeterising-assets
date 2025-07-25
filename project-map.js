@@ -14,9 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const iconUrl = iconURLs[status] || iconURLs["Proposed"];
     return L.icon({
       iconUrl,
-      iconSize: [32, 40],
-      iconAnchor: [16, 40],
-      popupAnchor: [0, -40],
+      iconSize: [41, 64],        // Maintain aspect ratio of original (1924x2986)
+      iconAnchor: [20.5, 64],    // Bottom-center of pin
+      popupAnchor: [0, -64],     // Popup above the tip of the pin
     });
   }
 
