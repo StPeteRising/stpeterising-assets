@@ -62,10 +62,15 @@
 .leaflet-marker-icon {
   transition: transform 0.2s ease;
   object-fit: contain;
-  /* DO NOT set width or height here — let Leaflet control it */
+  /* No width or height here — Leaflet controls icon size */
 }
 
 .leaflet-marker-icon:hover {
   transform: scale(1.1);
   z-index: 1000;
+}
+
+/* Fullscreen button z-index fix (optional) */
+.leaflet-control-fullscreen {
+  z-index: 1001;
 }
