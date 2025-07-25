@@ -14,19 +14,48 @@ document.addEventListener("DOMContentLoaded", () => {
     const iconUrl = iconURLs[status] || iconURLs["Proposed"];
     return L.icon({
       iconUrl,
-      iconSize: [21, 32],        // Smaller size for pins
-      iconAnchor: [10.5, 32],    // Bottom center anchor
-      popupAnchor: [0, -32],     // Popup above the pin
+      iconSize: [21, 32],        // Icon size in px
+      iconAnchor: [10.5, 32],    // Anchor bottom-center
+      popupAnchor: [0, -32],     // Popup above icon
     });
   }
 
+  function createLegend(iconURLs) {
+    const legendContainer = document.getElementById('map-legend');
+    if (!legendContainer) return;
+
+    legendContainer.innerHTML = '';
+
+    for (const [status, iconUrl] of Object.entries(iconURLs)) {
+      const item = document.createElement('div');
+      item.className = 'legend-item';
+
+      const img = document.createElement('img');
+      img.src = iconUrl;
+      img.alt = status + ' icon';
+
+      const label = document.createElement('span');
+      label.textContent = status;
+
+      item.appendChild(img);
+      item.appendChild(label);
+
+      legendContainer.appendChild(item);
+    }
+  }
+
+  // Initialize map
   const map = L.map('project-map').setView([27.773, -82.64], 13);
+
   L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`, {
     tileSize: 512,
     zoomOffset: -1,
     attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="https://www.openstreetmap.org/about/">OpenStreetMap</a>',
     maxZoom: 18,
   }).addTo(map);
+
+  // Create legend after map init
+  createLegend(iconURLs);
 
   const markers = L.markerClusterGroup({
     chunkedLoading: true,
