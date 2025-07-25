@@ -1,16 +1,25 @@
 document.addEventListener("DOMContentLoaded", () => {
   const sheetURL = 'https://opensheet.elk.sh/1e7n0NgW7swUmn6hqCW2KslFgVd3RJhQRiuVSaIY3A1c/Sheet1';
-  const mapboxToken = 'pk.eyJ1Ijoic3RwZXRlcmlzaW5nIiwiYSI6ImNtZDZxb2lweDBib2Mya3BzZ2xrdmgxMDEifQ.QWBg7S51ggQ_jemRmD7nRw'; // Replace with your actual Mapbox public token
+  const mapboxToken = 'pk.eyJ1Ijoic3RwZXRlcmlzaW5nIiwiYSI6ImNtZDZxb2lweDBib2Mya3BzZ2xrdmgxMDEifQ.QWBg7S51ggQ_jemRmD7nRw';
 
-  const statusColors = {
-    Proposed: 'yellow',
-    Approved: 'green',
-    "Under Construction": 'blue',
-    Complete: 'gray',
-    Cancelled: 'red'
+  const iconURLs = {
+    "Proposed": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/refs/heads/main/icons/Proposed.png",
+    "Approved": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/refs/heads/main/icons/Approved.png",
+    "Under Construction": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/refs/heads/main/icons/UnderConstruction.png",
+    "Complete": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/refs/heads/main/icons/Complete.png",
+    "Cancelled": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/refs/heads/main/icons/Cancelled.png"
   };
 
-  // Initialize the map with Mapbox Outdoors style tiles and corrected tile URL
+  function getCustomIcon(status) {
+    const iconUrl = iconURLs[status] || iconURLs["Proposed"];
+    return L.icon({
+      iconUrl,
+      iconSize: [32, 40],
+      iconAnchor: [16, 40],
+      popupAnchor: [0, -40],
+    });
+  }
+
   const map = L.map('project-map').setView([27.773, -82.64], 13);
   L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`, {
     tileSize: 512,
@@ -32,16 +41,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const lat = parseFloat(project.Lat);
         const lng = parseFloat(project.Lng);
         const status = project.Status;
-        const color = statusColors[status] || 'gray';
 
         if (!isNaN(lat) && !isNaN(lng)) {
-          const marker = L.circleMarker([lat, lng], {
-            radius: 8,
-            fillColor: color,
-            color: '#333',
-            weight: 1,
-            opacity: 1,
-            fillOpacity: 0.9
+          const marker = L.marker([lat, lng], {
+            icon: getCustomIcon(status)
           });
 
           const popupHtml = `
