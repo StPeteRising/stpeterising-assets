@@ -22,54 +22,36 @@
   border-radius: 8px;
 }
 
+/* Legend container styling */
 .map-legend {
   position: absolute;
   bottom: 20px;
   right: 20px;
   background: white;
-  padding: 10px 16px;
-  border-radius: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   font-family: Arial, sans-serif;
   font-size: 14px;
   z-index: 1000;
-  line-height: 1.4;
   max-width: 220px;
   user-select: none;
 }
 
+/* Legend items as labels with checkboxes */
 .map-legend .legend-item {
-  cursor: pointer;
-  opacity: 0.85;
-  padding: 8px 12px;
-  margin-bottom: 8px;
-  border-radius: 12px;
-  background-color: #f9f9f9;
-  border: 1.5px solid #ddd;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   display: flex;
   align-items: center;
-  gap: 10px;
+  margin-bottom: 8px;
+  cursor: pointer;
   user-select: none;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
 }
 
-.map-legend .legend-item:hover {
-  background-color: #e0f0ff;
-  box-shadow: 0 4px 10px rgba(0,123,255,0.3);
-  opacity: 1;
-  border-color: #66b0ff;
+.map-legend .legend-item:last-child {
+  margin-bottom: 0;
 }
 
-.map-legend .legend-item.active {
-  background-color: #007BFF;
-  color: white;
-  border-color: #0056b3;
-  box-shadow: 0 0 8px rgba(0,123,255,0.7);
-  opacity: 1;
-}
-
-.map-legend img {
+.map-legend .legend-item img {
   width: 21px;
   height: 32px;
   margin-right: 8px;
@@ -77,12 +59,7 @@
   flex-shrink: 0;
 }
 
-.leaflet-marker-icon {
-  transition: transform 0.2s ease;
-  object-fit: contain;
-}
-
-.leaflet-marker-icon:hover {
-  transform: scale(1.1);
-  z-index: 1000;
+.map-legend .legend-item input[type="checkbox"] {
+  cursor: pointer;
+  flex-shrink: 0;
 }
