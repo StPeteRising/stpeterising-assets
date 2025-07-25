@@ -1,8 +1,10 @@
+/* Baseline map container */
 #map {
   height: 100vh;
   width: 100%;
 }
 
+/* Popup styling */
 .popup-content {
   font-family: sans-serif;
   font-size: 14px;
@@ -20,4 +22,51 @@
   max-width: 240px;
   margin-top: 10px;
   border-radius: 8px;
+}
+
+/* Legend Styles */
+.map-legend {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  z-index: 1000;
+  line-height: 1.4;
+  max-width: 200px;
+}
+
+.map-legend .legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.map-legend .legend-item:last-child {
+  margin-bottom: 0;
+}
+
+.map-legend img {
+  width: 21px; /* matches icon width */
+  height: 32px; /* matches icon height */
+  margin-right: 8px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* Marker Hover Effect */
+.leaflet-marker-icon {
+  transition: transform 0.2s ease;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain;
+}
+
+.leaflet-marker-icon:hover {
+  transform: scale(1.1);
+  z-index: 1000;
 }
