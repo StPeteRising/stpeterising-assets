@@ -50,6 +50,11 @@ document.addEventListener("DOMContentLoaded", () => {
         ? `<span class="cancelled-tag">Cancelled</span>`
         : '';
 
+      // Determine whether to show Units or Retail Square Footage
+      const isRetail = (project.Class || '').toLowerCase() === 'retail';
+      const unitsOrSqFtLabel = isRetail ? 'Square Feet' : 'Units';
+      const unitsOrSqFtValue = isRetail ? (project['Retail Square Footage'] || '') : (project.Units || '');
+
       container.innerHTML = `
         <div class="project-status-wrapper">
           <div class="project-status-label">Status</div>
@@ -72,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="stat-block"><div class="label">Address</div><span>${project.Address || ''}</span></div>
           <div class="stat-block"><div class="label">Class</div><span>${project.Class || ''}</span></div>
           <div class="stat-block"><div class="label">Floors</div><span>${project.Floors || ''}</span></div>
-          <div class="stat-block"><div class="label">Units</div><span>${project.Units || ''}</span></div>
+          <div class="stat-block"><div class="label">${unitsOrSqFtLabel}</div><span>${unitsOrSqFtValue}</span></div>
           <div class="stat-block"><div class="label">Completion</div><span>${project.Completion || ''}</span></div>
         </div>
 
