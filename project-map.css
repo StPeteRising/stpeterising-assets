@@ -51,8 +51,8 @@
 }
 
 .map-legend img {
-  width: 21px; /* matches icon width */
-  height: 32px; /* matches icon height */
+  width: 21px; /* matches your icon width */
+  height: 32px; /* matches your icon height */
   margin-right: 8px;
   object-fit: contain;
   flex-shrink: 0;
@@ -61,9 +61,8 @@
 /* Marker Hover Effect */
 .leaflet-marker-icon {
   transition: transform 0.2s ease;
-  width: auto !important;
-  height: auto !important;
   object-fit: contain;
+  /* DO NOT set width or height here — let Leaflet control it */
 }
 
 .leaflet-marker-icon:hover {
