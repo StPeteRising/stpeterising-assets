@@ -20,9 +20,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  const statusLayers = {};
-  const activeStatuses = new Set(Object.keys(iconURLs));
+  // Start with all statuses active except "Cancelled"
+  const activeStatuses = new Set(Object.keys(iconURLs).filter(status => status !== "Cancelled"));
 
+  const statusLayers = {};
   const map = L.map('project-map').setView([27.773, -82.64], 13);
 
   L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`, {
@@ -79,18 +80,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
+      // Add only active status layers to markers cluster
       for (const status of activeStatuses) {
         markers.addLayer(statusLayers[status]);
       }
       map.addLayer(markers);
 
-      createLegend(iconURLs, statusLayers, markers, map, activeStatuses);
+      createLegend(iconURLs, statusLayers, markers, activeStatuses);
     })
     .catch(err => {
       console.error("Error loading map data:", err);
     });
 
-  function createLegend(iconURLs, statusLayers, markers, map, activeStatuses) {
+  function createLegend(iconURLs, statusLayers, markers, activeStatuses) {
     const legendContainer = document.getElementById('map-legend');
     if (!legendContainer) return;
 
@@ -102,7 +104,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
-      checkbox.checked = true;
+
+      // Cancelled unchecked by default
+      checkbox.checked = status !== "Cancelled";
       checkbox.style.marginRight = '8px';
       checkbox.id = `legend-checkbox-${status.replace(/\s+/g, '-')}`;
 
@@ -113,7 +117,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const labelText = document.createElement('span');
       labelText.textContent = status;
 
-      // Clicking checkbox toggles markers visibility
       checkbox.addEventListener('change', () => {
         if (checkbox.checked) {
           activeStatuses.add(status);
