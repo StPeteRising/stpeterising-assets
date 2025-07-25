@@ -14,17 +14,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const iconUrl = iconURLs[status] || iconURLs["Proposed"];
     return L.icon({
       iconUrl,
-      iconSize: [21, 32],        // Icon size in px
-      iconAnchor: [10.5, 32],    // Anchor bottom-center
-      popupAnchor: [0, -32],     // Popup above icon
+      iconSize: [21, 32],
+      iconAnchor: [10.5, 32],
+      popupAnchor: [0, -32],
     });
   }
 
-  // Keep track of active statuses and their LayerGroups
   const statusLayers = {};
   const activeStatuses = new Set(Object.keys(iconURLs));
 
-  // Initialize the map
   const map = L.map('project-map').setView([27.773, -82.64], 13);
 
   L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`, {
@@ -34,7 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
     maxZoom: 18,
   }).addTo(map);
 
-  // Initialize LayerGroups per status
   for (const status of Object.keys(iconURLs)) {
     statusLayers[status] = L.layerGroup();
   }
@@ -82,20 +79,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
-      // Add all active status layers to map initially
       for (const status of activeStatuses) {
         markers.addLayer(statusLayers[status]);
       }
       map.addLayer(markers);
 
-      // Create the clickable legend filter
       createLegend(iconURLs, statusLayers, markers, map, activeStatuses);
     })
     .catch(err => {
       console.error("Error loading map data:", err);
     });
 
-  // Legend creation with clickable filtering
   function createLegend(iconURLs, statusLayers, markers, map, activeStatuses) {
     const legendContainer = document.getElementById('map-legend');
     if (!legendContainer) return;
@@ -104,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     for (const [status, iconUrl] of Object.entries(iconURLs)) {
       const item = document.createElement('div');
-      item.className = 'legend-item active'; // active by default
+      item.className = 'legend-item active';
 
       const img = document.createElement('img');
       img.src = iconUrl;
@@ -116,7 +110,6 @@ document.addEventListener("DOMContentLoaded", () => {
       item.appendChild(img);
       item.appendChild(label);
 
-      // Click event to toggle visibility
       item.addEventListener('click', () => {
         if (activeStatuses.has(status)) {
           activeStatuses.delete(status);
