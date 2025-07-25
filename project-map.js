@@ -97,30 +97,36 @@ document.addEventListener("DOMContentLoaded", () => {
     legendContainer.innerHTML = '';
 
     for (const [status, iconUrl] of Object.entries(iconURLs)) {
-      const item = document.createElement('div');
-      item.className = 'legend-item active';
+      const item = document.createElement('label');
+      item.className = 'legend-item';
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = true;
+      checkbox.style.marginRight = '8px';
+      checkbox.id = `legend-checkbox-${status.replace(/\s+/g, '-')}`;
 
       const img = document.createElement('img');
       img.src = iconUrl;
       img.alt = status + ' icon';
 
-      const label = document.createElement('span');
-      label.textContent = status;
+      const labelText = document.createElement('span');
+      labelText.textContent = status;
 
-      item.appendChild(img);
-      item.appendChild(label);
-
-      item.addEventListener('click', () => {
-        if (activeStatuses.has(status)) {
-          activeStatuses.delete(status);
-          markers.removeLayer(statusLayers[status]);
-          item.classList.remove('active');
-        } else {
+      // Clicking checkbox toggles markers visibility
+      checkbox.addEventListener('change', () => {
+        if (checkbox.checked) {
           activeStatuses.add(status);
           markers.addLayer(statusLayers[status]);
-          item.classList.add('active');
+        } else {
+          activeStatuses.delete(status);
+          markers.removeLayer(statusLayers[status]);
         }
       });
+
+      item.appendChild(checkbox);
+      item.appendChild(img);
+      item.appendChild(labelText);
 
       legendContainer.appendChild(item);
     }
