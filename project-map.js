@@ -20,7 +20,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Start with all statuses active except "Cancelled"
   const activeStatuses = new Set(Object.keys(iconURLs).filter(status => status !== "Cancelled"));
 
   const statusLayers = {};
@@ -80,13 +79,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
-      // Add only active status layers to markers cluster
       for (const status of activeStatuses) {
         markers.addLayer(statusLayers[status]);
       }
       map.addLayer(markers);
 
       createLegend(iconURLs, statusLayers, markers, activeStatuses);
+      setupLegendToggle();
     })
     .catch(err => {
       console.error("Error loading map data:", err);
@@ -104,8 +103,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
-
-      // Cancelled unchecked by default
       checkbox.checked = status !== "Cancelled";
       checkbox.style.marginRight = '8px';
       checkbox.id = `legend-checkbox-${status.replace(/\s+/g, '-')}`;
@@ -133,5 +130,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
       legendContainer.appendChild(item);
     }
+  }
+
+  function setupLegendToggle() {
+    const container = document.getElementById('legend-container');
+    if (!container) return;
+
+    const toggleBtn = document.createElement('button');
+    toggleBtn.id = 'legend-toggle-btn';
+    toggleBtn.textContent = 'Hide Legend';
+    toggleBtn.type = 'button';
+
+    toggleBtn.style.marginBottom = '8px';
+    toggleBtn.style.padding = '6px 12px';
+    toggleBtn.style.border = 'none';
+    toggleBtn.style.backgroundColor = '#007BFF';
+    toggleBtn.style.color = 'white';
+    toggleBtn.style.borderRadius = '6px';
+    toggleBtn.style.cursor = 'pointer';
+    toggleBtn.style.fontSize = '14px';
+    toggleBtn.style.userSelect = 'none';
+
+    toggleBtn.addEventListener('click', () => {
+      const legend = document.getElementById('map-legend');
+      if (!legend) return;
+
+      if (legend.style.display === 'none') {
+        legend.style.display = 'block';
+        toggleBtn.textContent = 'Hide Legend';
+      } else {
+        legend.style.display = 'none';
+        toggleBtn.textContent = 'Show Legend';
+      }
+    });
+
+    container.insertBefore(toggleBtn, container.firstChild);
   }
 });
