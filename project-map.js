@@ -32,12 +32,12 @@ document.addEventListener("DOMContentLoaded", () => {
     maxZoom: 18,
   }).addTo(map);
 
-  // Add fullscreen control (Step 1 & 2 from earlier)
+  // Add fullscreen control
   L.control.fullscreen({
     position: 'topright'
   }).addTo(map);
 
-  // Add geocoder control
+  // Add geocoder control if available
   if (L.Control.Geocoder) {
     const geocoder = L.Control.geocoder({
       defaultMarkGeocode: false,
@@ -114,21 +114,21 @@ document.addEventListener("DOMContentLoaded", () => {
       createLegend(iconURLs, statusLayers, markers, activeStatuses);
       setupLegendToggle();
 
-      // Fullscreen legend fix: move legend container inside fullscreen map container when toggling
+      // Legend fullscreen fix: move legend into fullscreen container when toggling
+      const legend = document.getElementById('legend-container');
+      const mapWrapper = document.getElementById('map-wrapper');
+
       map.on('enterFullscreen', () => {
-        const legend = document.getElementById('legend-container');
-        if (!legend) return;
         const fullscreenContainer = document.querySelector('.leaflet-fullscreen-on');
-        if (fullscreenContainer) {
+        if (legend && fullscreenContainer) {
           fullscreenContainer.appendChild(legend);
         }
       });
 
       map.on('exitFullscreen', () => {
-        const legend = document.getElementById('legend-container');
-        if (!legend) return;
-        const mapWrapper = document.getElementById('map-wrapper') || document.body;
-        mapWrapper.appendChild(legend);
+        if (legend && mapWrapper) {
+          mapWrapper.appendChild(legend);
+        }
       });
 
     })
