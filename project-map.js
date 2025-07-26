@@ -1,164 +1,117 @@
-// Define custom icons by status
-const iconUrls = {
-  "Proposed": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/main/icons/Proposed.png",
-  "Approved": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/main/icons/Approved.png",
-  "Under Construction": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/main/icons/UnderConstruction.png",
-  "Complete": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/main/icons/Complete.png",
-  "Cancelled": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/main/icons/Cancelled.png"
-};
+document.addEventListener("DOMContentLoaded", () => {
+  const sheetURL = 'https://opensheet.elk.sh/1e7n0NgW7swUmn6hqCW2KslFgVd3RJhQRiuVSaIY3A1c/Sheet1';
+  const mapboxToken = 'pk.eyJ1Ijoic3RwZXRlcmlzaW5nIiwiYSI6ImNtZDZxb2Mxa3BzZ2xrdmgxMDEifQ.QWBg7S51ggQ_jemRmD7nRw';
 
-const icons = {};
-Object.keys(iconUrls).forEach(status => {
-  icons[status] = L.icon({
-    iconUrl: iconUrls[status],
-    iconSize: [40, 40],
-    iconAnchor: [20, 40],
-    popupAnchor: [0, -40]
-  });
-});
+  const iconURLs = {
+    "Proposed": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/refs/heads/main/icons/Proposed.png",
+    "Approved": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/refs/heads/main/icons/Approved.png",
+    "Under Construction": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/refs/heads/main/icons/UnderConstruction.png",
+    "Complete": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/refs/heads/main/icons/Complete.png",
+    "Cancelled": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/refs/heads/main/icons/Cancelled.png"
+  };
 
-// Initialize map
-const map = L.map("project-map").setView([27.773, -82.64], 14);
-
-// Add base layer
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  attribution: '&copy; OpenStreetMap contributors'
-}).addTo(map);
-
-// Marker cluster group
-const markers = L.markerClusterGroup();
-const markerGroupsByStatus = {};
-
-// Dummy data - replace with dynamic project data
-const projectData = [
-  {
-    title: "3rd & 3rd",
-    status: "Under Construction",
-    class: "Mixed-Use",
-    units: 270,
-    lat: 27.7734,
-    lng: -82.6397,
-    image: "https://via.placeholder.com/240x160",
-  },
-  {
-    title: "Central Lofts",
-    status: "Proposed",
-    class: "Residential",
-    units: 112,
-    lat: 27.7718,
-    lng: -82.6423,
-    image: "https://via.placeholder.com/240x160",
-  },
-  {
-    title: "Bayfront Tower Renovation",
-    status: "Complete",
-    class: "Office",
-    units: "15,000",
-    lat: 27.771,
-    lng: -82.6335,
-    image: "https://via.placeholder.com/240x160",
-  },
-  {
-    title: "Some Cancelled Project",
-    status: "Cancelled",
-    class: "Hotel",
-    units: 200,
-    lat: 27.7701,
-    lng: -82.638,
-    image: "https://via.placeholder.com/240x160",
+  function getCustomIcon(status) {
+    const iconUrl = iconURLs[status] || iconURLs["Proposed"];
+    return L.icon({
+      iconUrl,
+      iconSize: [21, 32],
+      iconAnchor: [10.5, 32],
+      popupAnchor: [0, -32]
+    });
   }
-];
 
-// Create markers
-projectData.forEach(project => {
-  const marker = L.marker([project.lat, project.lng], {
-    icon: icons[project.status] || icons["Proposed"]
-  });
+  const activeStatuses = new Set(Object.keys(iconURLs).filter(s => s !== "Cancelled"));
+  const statusLayers = {};
 
-  const unitsLabel = project.class === "Office" ? "Square Feet" : "Units";
-  const unitsValue = project.units || "TBD";
-
-  marker.bindPopup(`
-    <div class="popup-content">
-      <div class="popup-title">${project.title}</div>
-      <div><strong>Status:</strong> ${project.status}</div>
-      <div><strong>Class:</strong> ${project.class}</div>
-      <div><strong>${unitsLabel}:</strong> ${unitsValue}</div>
-      <img src="${project.image}" alt="${project.title}" />
-    </div>
-  `);
-
-  // Track by status
-  if (!markerGroupsByStatus[project.status]) {
-    markerGroupsByStatus[project.status] = L.layerGroup();
-  }
-  markerGroupsByStatus[project.status].addLayer(marker);
-  markers.addLayer(marker);
-});
-
-map.addLayer(markers);
-
-// Create legend container
-const legendContainer = L.control({ position: "bottomright" });
-legendContainer.onAdd = function () {
-  const div = L.DomUtil.create("div", "legend");
-  div.id = "legend-container";
-
-  // Add each status as checkbox
-  Object.keys(iconUrls).forEach(status => {
-    const checked = status === "Cancelled" ? "" : "checked";
-    div.innerHTML += `
-      <label class="legend-item">
-        <input type="checkbox" class="legend-checkbox" data-status="${status}" ${checked} />
-        <img src="${iconUrls[status]}" alt="${status} icon" />
-        ${status}
-      </label>
-    `;
-  });
-
-  return div;
-};
-legendContainer.addTo(map);
-
-// Add legend toggle button (outside legend)
-const toggleBtn = document.createElement("button");
-toggleBtn.id = "legend-toggle";
-toggleBtn.textContent = "Hide Legend";
-document.body.appendChild(toggleBtn);
-
-const legendEl = document.getElementById("legend-container");
-
-toggleBtn.addEventListener("click", () => {
-  if (legendEl.classList.contains("hidden")) {
-    legendEl.classList.remove("hidden");
-    toggleBtn.textContent = "Hide Legend";
-  } else {
-    legendEl.classList.add("hidden");
-    toggleBtn.textContent = "Show Legend";
-  }
-});
-
-// Filtering logic
-function updateVisibleMarkers() {
-  markers.clearLayers();
-
-  const checkedStatuses = Array.from(document.querySelectorAll(".legend-checkbox:checked")).map(
-    (checkbox) => checkbox.dataset.status
-  );
-
-  Object.entries(markerGroupsByStatus).forEach(([status, group]) => {
-    if (checkedStatuses.includes(status)) {
-      markers.addLayer(group);
+  const map = L.map('project-map').setView([27.773, -82.64], 13);
+  L.tileLayer(
+    `https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`,
+    {
+      tileSize: 512,
+      zoomOffset: -1,
+      attribution: '© Mapbox © OpenStreetMap',
+      maxZoom: 18
     }
-  });
-}
+  ).addTo(map);
 
-// Attach listener to checkboxes
-document.addEventListener("change", (e) => {
-  if (e.target.classList.contains("legend-checkbox")) {
-    updateVisibleMarkers();
+  for (const status of Object.keys(iconURLs)) {
+    statusLayers[status] = L.layerGroup();
+  }
+
+  const markers = L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 15, spiderfyOnMaxZoom: true });
+
+  fetch(sheetURL)
+    .then(res => res.json())
+    .then(data => {
+      data.forEach(proj => {
+        const lat = parseFloat(proj.Lat), lng = parseFloat(proj.Lng), status = proj.Status || "Proposed";
+        if (!isNaN(lat) && !isNaN(lng)) {
+          const marker = L.marker([lat, lng], { icon: getCustomIcon(status) });
+          const popupHtml = `
+            <div class="popup-content" style="min-width:250px;">
+              <div class="popup-title">${proj["Project Name"]}</div>
+              <div><strong>Status:</strong> ${status}</div>
+              <div><strong>Address:</strong> ${proj.Address || ''}</div>
+              <div><strong>Class:</strong> ${proj.Class || ''}</div>
+              <div><strong>Floors:</strong> ${proj.Floors || ''}</div>
+              <div><strong>Units:</strong> ${proj.Units || ''}</div>
+              <div><strong>Completion:</strong> ${proj.Completion || ''}</div>
+              ${proj.Rendering ? `<img src="${proj.Rendering}" style="max-width:100%; margin-top:8px; cursor:pointer;" onclick="window.open('${proj.Rendering}','_blank')" />` : ''}
+              ${proj.Slug ? `<div style="margin-top:8px;"><a href="https://stpeterising.com/${proj.Slug}" target="_blank">View Project Page →</a></div>` : ''}
+            </div>`;
+          marker.bindPopup(popupHtml);
+          statusLayers[status].addLayer(marker);
+        }
+      });
+
+      for (const status of activeStatuses) {
+        markers.addLayer(statusLayers[status]);
+      }
+      map.addLayer(markers);
+
+      createLegend();
+      addLegendToggle();
+    })
+    .catch(err => console.error("Error loading map data:", err));
+
+  function createLegend() {
+    const container = document.getElementById('map-legend');
+    if (!container) return;
+    container.innerHTML = '';
+    for (const [status, iconUrl] of Object.entries(iconURLs)) {
+      const label = document.createElement('label');
+      label.className = 'legend-item';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = status !== "Cancelled";
+      cb.dataset.status = status;
+      cb.addEventListener('change', () => toggleStatus(status, cb.checked));
+      const img = document.createElement('img');
+      img.src = iconUrl; img.alt = status + ' icon';
+      label.append(cb, img, document.createTextNode(status));
+      container.appendChild(label);
+    }
+  }
+
+  function toggleStatus(status, on) {
+    if (on) {
+      activeStatuses.add(status);
+      markers.addLayer(statusLayers[status]);
+    } else {
+      activeStatuses.delete(status);
+      markers.removeLayer(statusLayers[status]);
+    }
+  }
+
+  function addLegendToggle() {
+    const btn = document.createElement('button');
+    btn.id = 'legend-toggle';
+    btn.textContent = 'Hide Legend';
+    document.body.appendChild(btn);
+    const leg = document.getElementById('map-legend');
+    btn.addEventListener('click', () => {
+      if (leg.classList.toggle('hidden')) btn.textContent = 'Show Legend';
+      else btn.textContent = 'Hide Legend';
+    });
   }
 });
-
-// Initial filter setup
-updateVisibleMarkers();
