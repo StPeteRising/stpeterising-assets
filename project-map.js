@@ -1,169 +1,164 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const sheetURL = 'https://opensheet.elk.sh/1e7n0NgW7swUmn6hqCW2KslFgVd3RJhQRiuVSaIY3A1c/Sheet1';
-  const mapboxToken = 'pk.eyJ1Ijoic3RwZXRlcmlzaW5nIiwiYSI6ImNtZDZxb2lweDBib2Mya3BzZ2xrdmgxMDEifQ.QWBg7S51ggQ_jemRmD7nRw';
+// Define custom icons by status
+const iconUrls = {
+  "Proposed": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/main/icons/Proposed.png",
+  "Approved": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/main/icons/Approved.png",
+  "Under Construction": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/main/icons/UnderConstruction.png",
+  "Complete": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/main/icons/Complete.png",
+  "Cancelled": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/main/icons/Cancelled.png"
+};
 
-  const iconURLs = {
-    "Proposed": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/refs/heads/main/icons/Proposed.png",
-    "Approved": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/refs/heads/main/icons/Approved.png",
-    "Under Construction": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/refs/heads/main/icons/UnderConstruction.png",
-    "Complete": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/refs/heads/main/icons/Complete.png",
-    "Cancelled": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/refs/heads/main/icons/Cancelled.png"
-  };
+const icons = {};
+Object.keys(iconUrls).forEach(status => {
+  icons[status] = L.icon({
+    iconUrl: iconUrls[status],
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -40]
+  });
+});
 
-  function getCustomIcon(status) {
-    const iconUrl = iconURLs[status] || iconURLs["Proposed"];
-    return L.icon({
-      iconUrl,
-      iconSize: [21, 32],
-      iconAnchor: [10.5, 32],
-      popupAnchor: [0, -32],
-    });
+// Initialize map
+const map = L.map("project-map").setView([27.773, -82.64], 14);
+
+// Add base layer
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+// Marker cluster group
+const markers = L.markerClusterGroup();
+const markerGroupsByStatus = {};
+
+// Dummy data - replace with dynamic project data
+const projectData = [
+  {
+    title: "3rd & 3rd",
+    status: "Under Construction",
+    class: "Mixed-Use",
+    units: 270,
+    lat: 27.7734,
+    lng: -82.6397,
+    image: "https://via.placeholder.com/240x160",
+  },
+  {
+    title: "Central Lofts",
+    status: "Proposed",
+    class: "Residential",
+    units: 112,
+    lat: 27.7718,
+    lng: -82.6423,
+    image: "https://via.placeholder.com/240x160",
+  },
+  {
+    title: "Bayfront Tower Renovation",
+    status: "Complete",
+    class: "Office",
+    units: "15,000",
+    lat: 27.771,
+    lng: -82.6335,
+    image: "https://via.placeholder.com/240x160",
+  },
+  {
+    title: "Some Cancelled Project",
+    status: "Cancelled",
+    class: "Hotel",
+    units: 200,
+    lat: 27.7701,
+    lng: -82.638,
+    image: "https://via.placeholder.com/240x160",
   }
+];
 
-  const activeStatuses = new Set(Object.keys(iconURLs).filter(status => status !== "Cancelled"));
-
-  const statusLayers = {};
-  const map = L.map('project-map').setView([27.773, -82.64], 13);
-
-  L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`, {
-    tileSize: 512,
-    zoomOffset: -1,
-    attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="https://www.openstreetmap.org/about/">OpenStreetMap</a>',
-    maxZoom: 18,
-  }).addTo(map);
-
-  for (const status of Object.keys(iconURLs)) {
-    statusLayers[status] = L.layerGroup();
-  }
-
-  const markers = L.markerClusterGroup({
-    chunkedLoading: true,
-    maxClusterRadius: 15,
-    spiderfyOnMaxZoom: true,
+// Create markers
+projectData.forEach(project => {
+  const marker = L.marker([project.lat, project.lng], {
+    icon: icons[project.status] || icons["Proposed"]
   });
 
-  fetch(sheetURL)
-    .then(res => res.json())
-    .then(data => {
-      data.forEach(project => {
-        const lat = parseFloat(project.Lat);
-        const lng = parseFloat(project.Lng);
-        const status = project.Status || "Proposed";
+  const unitsLabel = project.class === "Office" ? "Square Feet" : "Units";
+  const unitsValue = project.units || "TBD";
 
-        if (!isNaN(lat) && !isNaN(lng)) {
-          const marker = L.marker([lat, lng], {
-            icon: getCustomIcon(status)
-          });
+  marker.bindPopup(`
+    <div class="popup-content">
+      <div class="popup-title">${project.title}</div>
+      <div><strong>Status:</strong> ${project.status}</div>
+      <div><strong>Class:</strong> ${project.class}</div>
+      <div><strong>${unitsLabel}:</strong> ${unitsValue}</div>
+      <img src="${project.image}" alt="${project.title}" />
+    </div>
+  `);
 
-          const popupHtml = `
-            <div class="popup-content" style="min-width: 250px;">
-              <div class="popup-title" style="font-weight: bold; margin-bottom: 6px;">${project["Project Name"]}</div>
-              <div><strong>Status:</strong> ${status || ''}</div>
-              <div><strong>Address:</strong> ${project.Address || ''}</div>
-              <div><strong>Class:</strong> ${project.Class || ''}</div>
-              <div><strong>Floors:</strong> ${project.Floors || ''}</div>
-              <div><strong>Units:</strong> ${project.Units || ''}</div>
-              <div><strong>Completion:</strong> ${project.Completion || ''}</div>
-              ${project.Rendering ? `<img src="${project.Rendering}" alt="Rendering" style="max-width:100%; margin-top: 8px; cursor:pointer;" onclick="window.open('${project.Rendering}', '_blank')" />` : ''}
-              ${project.Slug ? `
-                <div style="margin-top: 8px;">
-                  <a href="https://stpeterising.com/${project.Slug}" target="_blank" style="color: #007BFF; font-weight: bold; text-decoration: underline;">
-                    View Project Page →
-                  </a>
-                </div>` : ''}
-            </div>
-          `;
-
-          marker.bindPopup(popupHtml);
-          statusLayers[status].addLayer(marker);
-        }
-      });
-
-      for (const status of activeStatuses) {
-        markers.addLayer(statusLayers[status]);
-      }
-      map.addLayer(markers);
-
-      createLegend(iconURLs, statusLayers, markers, activeStatuses);
-      setupLegendToggle();
-    })
-    .catch(err => {
-      console.error("Error loading map data:", err);
-    });
-
-  function createLegend(iconURLs, statusLayers, markers, activeStatuses) {
-    const legendContainer = document.getElementById('map-legend');
-    if (!legendContainer) return;
-
-    legendContainer.innerHTML = '';
-
-    for (const [status, iconUrl] of Object.entries(iconURLs)) {
-      const item = document.createElement('label');
-      item.className = 'legend-item';
-
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.checked = status !== "Cancelled";
-      checkbox.style.marginRight = '8px';
-      checkbox.id = `legend-checkbox-${status.replace(/\s+/g, '-')}`;
-
-      const img = document.createElement('img');
-      img.src = iconUrl;
-      img.alt = status + ' icon';
-
-      const labelText = document.createElement('span');
-      labelText.textContent = status;
-
-      checkbox.addEventListener('change', () => {
-        if (checkbox.checked) {
-          activeStatuses.add(status);
-          markers.addLayer(statusLayers[status]);
-        } else {
-          activeStatuses.delete(status);
-          markers.removeLayer(statusLayers[status]);
-        }
-      });
-
-      item.appendChild(checkbox);
-      item.appendChild(img);
-      item.appendChild(labelText);
-
-      legendContainer.appendChild(item);
-    }
+  // Track by status
+  if (!markerGroupsByStatus[project.status]) {
+    markerGroupsByStatus[project.status] = L.layerGroup();
   }
+  markerGroupsByStatus[project.status].addLayer(marker);
+  markers.addLayer(marker);
+});
 
-  function setupLegendToggle() {
-    const container = document.getElementById('legend-container');
-    if (!container) return;
+map.addLayer(markers);
 
-    const toggleBtn = document.createElement('button');
-    toggleBtn.id = 'legend-toggle-btn';
-    toggleBtn.textContent = 'Hide Legend';
-    toggleBtn.type = 'button';
+// Create legend container
+const legendContainer = L.control({ position: "bottomright" });
+legendContainer.onAdd = function () {
+  const div = L.DomUtil.create("div", "legend");
+  div.id = "legend-container";
 
-    toggleBtn.style.marginBottom = '8px';
-    toggleBtn.style.padding = '6px 12px';
-    toggleBtn.style.border = 'none';
-    toggleBtn.style.backgroundColor = '#007BFF';
-    toggleBtn.style.color = 'white';
-    toggleBtn.style.borderRadius = '6px';
-    toggleBtn.style.cursor = 'pointer';
-    toggleBtn.style.fontSize = '14px';
-    toggleBtn.style.userSelect = 'none';
+  // Add each status as checkbox
+  Object.keys(iconUrls).forEach(status => {
+    const checked = status === "Cancelled" ? "" : "checked";
+    div.innerHTML += `
+      <label class="legend-item">
+        <input type="checkbox" class="legend-checkbox" data-status="${status}" ${checked} />
+        <img src="${iconUrls[status]}" alt="${status} icon" />
+        ${status}
+      </label>
+    `;
+  });
 
-    toggleBtn.addEventListener('click', () => {
-      const legend = document.getElementById('map-legend');
-      if (!legend) return;
+  return div;
+};
+legendContainer.addTo(map);
 
-      if (legend.style.display === 'none') {
-        legend.style.display = 'block';
-        toggleBtn.textContent = 'Hide Legend';
-      } else {
-        legend.style.display = 'none';
-        toggleBtn.textContent = 'Show Legend';
-      }
-    });
+// Add legend toggle button (outside legend)
+const toggleBtn = document.createElement("button");
+toggleBtn.id = "legend-toggle";
+toggleBtn.textContent = "Hide Legend";
+document.body.appendChild(toggleBtn);
 
-    container.insertBefore(toggleBtn, container.firstChild);
+const legendEl = document.getElementById("legend-container");
+
+toggleBtn.addEventListener("click", () => {
+  if (legendEl.classList.contains("hidden")) {
+    legendEl.classList.remove("hidden");
+    toggleBtn.textContent = "Hide Legend";
+  } else {
+    legendEl.classList.add("hidden");
+    toggleBtn.textContent = "Show Legend";
   }
 });
+
+// Filtering logic
+function updateVisibleMarkers() {
+  markers.clearLayers();
+
+  const checkedStatuses = Array.from(document.querySelectorAll(".legend-checkbox:checked")).map(
+    (checkbox) => checkbox.dataset.status
+  );
+
+  Object.entries(markerGroupsByStatus).forEach(([status, group]) => {
+    if (checkedStatuses.includes(status)) {
+      markers.addLayer(group);
+    }
+  });
+}
+
+// Attach listener to checkboxes
+document.addEventListener("change", (e) => {
+  if (e.target.classList.contains("legend-checkbox")) {
+    updateVisibleMarkers();
+  }
+});
+
+// Initial filter setup
+updateVisibleMarkers();
