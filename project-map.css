@@ -70,7 +70,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end; /* right align all children */
-  gap: 4px; /* smaller vertical spacing */
+  gap: 2px; /* smaller vertical spacing */
 }
 
 /* Toggle button: keep it right aligned, reduce padding for less height */
