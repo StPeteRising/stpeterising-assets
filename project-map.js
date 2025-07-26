@@ -23,7 +23,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const activeStatuses = new Set(Object.keys(iconURLs).filter(status => status !== "Cancelled"));
 
   const statusLayers = {};
-  const map = L.map('project-map').setView([27.773, -82.64], 13);
+
+  // Initialize the map with fullscreen control enabled
+  const map = L.map('project-map', {
+    center: [27.773, -82.64],
+    zoom: 13,
+    fullscreenControl: true,
+    fullscreenControlOptions: {
+      position: 'topright'
+    }
+  });
 
   L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`, {
     tileSize: 512,
@@ -141,8 +150,8 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleBtn.textContent = 'Hide Legend';
     toggleBtn.type = 'button';
 
-    toggleBtn.style.marginBottom = '8px';
-    toggleBtn.style.padding = '6px 12px';
+    toggleBtn.style.margin = '0 0 4px 0';
+    toggleBtn.style.padding = '4px 12px';
     toggleBtn.style.border = 'none';
     toggleBtn.style.backgroundColor = '#007BFF';
     toggleBtn.style.color = 'white';
