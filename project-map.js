@@ -23,24 +23,26 @@ document.addEventListener("DOMContentLoaded", () => {
   const activeStatuses = new Set(Object.keys(iconURLs).filter(status => status !== "Cancelled"));
 
   const statusLayers = {};
-  const map = L.map('project-map', {
-    center: [27.773, -82.64],
-    zoom: 13,
-    fullscreenControl: true,
-    fullscreenControlOptions: { position: 'topright' },
-    attributionControl: false,
-  });
+  const map = L.map('project-map').setView([27.773, -82.64], 13);
 
   L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`, {
     tileSize: 512,
     zoomOffset: -1,
+    attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="https://www.openstreetmap.org/about/">OpenStreetMap</a>',
     maxZoom: 18,
   }).addTo(map);
 
-  // Add Leaflet Control Geocoder
-  L.Control.geocoder({
-    defaultMarkGeocode: false
-  })
+  // Add fullscreen control (Step 1 & 2 from earlier)
+  L.control.fullscreen({
+    position: 'topright'
+  }).addTo(map);
+
+  // Add geocoder control
+  if (L.Control.Geocoder) {
+    const geocoder = L.Control.geocoder({
+      defaultMarkGeocode: false,
+      position: 'topleft',
+    })
     .on('markgeocode', function(e) {
       const bbox = e.geocode.bbox;
       const poly = L.polygon([
@@ -48,10 +50,14 @@ document.addEventListener("DOMContentLoaded", () => {
         bbox.getNorthEast(),
         bbox.getNorthWest(),
         bbox.getSouthWest()
-      ]);
+      ]).addTo(map);
       map.fitBounds(poly.getBounds());
+      setTimeout(() => {
+        map.removeLayer(poly);
+      }, 5000);
     })
     .addTo(map);
+  }
 
   for (const status of Object.keys(iconURLs)) {
     statusLayers[status] = L.layerGroup();
@@ -107,6 +113,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
       createLegend(iconURLs, statusLayers, markers, activeStatuses);
       setupLegendToggle();
+
+      // Fullscreen legend fix: move legend container inside fullscreen map container when toggling
+      map.on('enterFullscreen', () => {
+        const legend = document.getElementById('legend-container');
+        if (!legend) return;
+        const fullscreenContainer = document.querySelector('.leaflet-fullscreen-on');
+        if (fullscreenContainer) {
+          fullscreenContainer.appendChild(legend);
+        }
+      });
+
+      map.on('exitFullscreen', () => {
+        const legend = document.getElementById('legend-container');
+        if (!legend) return;
+        const mapWrapper = document.getElementById('map-wrapper') || document.body;
+        mapWrapper.appendChild(legend);
+      });
+
     })
     .catch(err => {
       console.error("Error loading map data:", err);
