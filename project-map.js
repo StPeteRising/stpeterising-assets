@@ -23,7 +23,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const activeStatuses = new Set(Object.keys(iconURLs).filter(status => status !== "Cancelled"));
 
   const statusLayers = {};
-  const map = L.map('project-map').setView([27.773, -82.64], 13);
+
+  // Initialize the map with fullscreen control enabled
+  const map = L.map('project-map', {
+    center: [27.773, -82.64],
+    zoom: 13,
+    fullscreenControl: true,
+    fullscreenControlOptions: {
+      position: 'topright'
+    }
+  });
 
   L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`, {
     tileSize: 512,
@@ -31,33 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
     attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="https://www.openstreetmap.org/about/">OpenStreetMap</a>',
     maxZoom: 18,
   }).addTo(map);
-
-  // Add fullscreen control
-  L.control.fullscreen({
-    position: 'topright'
-  }).addTo(map);
-
-  // Add geocoder control if available
-  if (L.Control.Geocoder) {
-    const geocoder = L.Control.geocoder({
-      defaultMarkGeocode: false,
-      position: 'topleft',
-    })
-    .on('markgeocode', function(e) {
-      const bbox = e.geocode.bbox;
-      const poly = L.polygon([
-        bbox.getSouthEast(),
-        bbox.getNorthEast(),
-        bbox.getNorthWest(),
-        bbox.getSouthWest()
-      ]).addTo(map);
-      map.fitBounds(poly.getBounds());
-      setTimeout(() => {
-        map.removeLayer(poly);
-      }, 5000);
-    })
-    .addTo(map);
-  }
 
   for (const status of Object.keys(iconURLs)) {
     statusLayers[status] = L.layerGroup();
@@ -113,24 +95,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       createLegend(iconURLs, statusLayers, markers, activeStatuses);
       setupLegendToggle();
-
-      // Legend fullscreen fix: move legend into fullscreen container when toggling
-      const legend = document.getElementById('legend-container');
-      const mapWrapper = document.getElementById('map-wrapper');
-
-      map.on('enterFullscreen', () => {
-        const fullscreenContainer = document.querySelector('.leaflet-fullscreen-on');
-        if (legend && fullscreenContainer) {
-          fullscreenContainer.appendChild(legend);
-        }
-      });
-
-      map.on('exitFullscreen', () => {
-        if (legend && mapWrapper) {
-          mapWrapper.appendChild(legend);
-        }
-      });
-
     })
     .catch(err => {
       console.error("Error loading map data:", err);
@@ -186,8 +150,8 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleBtn.textContent = 'Hide Legend';
     toggleBtn.type = 'button';
 
-    toggleBtn.style.marginBottom = '8px';
-    toggleBtn.style.padding = '6px 12px';
+    toggleBtn.style.margin = '0 0 4px 0';
+    toggleBtn.style.padding = '4px 12px';
     toggleBtn.style.border = 'none';
     toggleBtn.style.backgroundColor = '#007BFF';
     toggleBtn.style.color = 'white';
