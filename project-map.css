@@ -23,7 +23,7 @@
   border-radius: 8px;
 }
 
-/* Legend styles */
+/* Legend container */
 #legend-container {
   position: absolute;
   bottom: 20px;
@@ -31,7 +31,7 @@
   z-index: 1000;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   background: #fff;
   padding: 10px;
   border-radius: 8px;
@@ -41,14 +41,7 @@
   font-size: 14px;
 }
 
-.legend-toggle-container {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  align-items: center;
-  margin-bottom: 4px;
-}
-
+/* Legend items */
 .legend-item {
   display: flex;
   align-items: center;
@@ -68,14 +61,18 @@
   margin-right: 6px;
 }
 
-.legend-toggle {
+/* Toggle legend button (separate from container) */
+#legend-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1001;
   background: #ffffff;
   border: 1px solid #ccc;
-  padding: 4px 8px;
+  padding: 6px 10px;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 12px;
-  margin-left: auto;
+  font-size: 13px;
 }
 
 .hidden {
