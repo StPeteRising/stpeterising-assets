@@ -69,18 +69,14 @@
 
   display: flex;
   flex-direction: column;
-  align-items: flex-end; /* Align toggle and legend to right */
+  align-items: flex-end; /* aligns legend and button container right */
+  gap: 8px; /* spacing between button and legend */
 }
 
-/* Add spacing so legend is below toggle button */
-#map-legend {
-  margin-top: 8px;
-}
-
-/* Toggle button styling */
+/* Make toggle button align left inside right-aligned container */
 #legend-toggle-btn {
-  margin-top: 4px; /* add some space to push it down */
-  margin-bottom: 8px;
+  align-self: flex-start; /* override parent's align-items */
+  margin-bottom: 0;
   padding: 6px 12px;
   border: none;
   background-color: #007BFF;
@@ -94,4 +90,9 @@
 
 #legend-toggle-btn:hover {
   background-color: #0056b3;
+}
+
+/* Add spacing so legend is below toggle button */
+#map-legend {
+  margin-top: 0;
 }
