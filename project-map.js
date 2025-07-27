@@ -90,26 +90,28 @@ document.addEventListener("DOMContentLoaded", () => {
           marker.bindPopup(popupHtml);
 
           marker.on('popupopen', (e) => {
-            const popup = e.popup;
-            const popupElement = popup.getElement();
-            if (!popupElement) return;
+            setTimeout(() => {
+              const popup = e.popup;
+              const popupElement = popup.getElement();
+              if (!popupElement) return;
 
-            const mapContainerRect = map.getContainer().getBoundingClientRect();
-            const popupRect = popupElement.getBoundingClientRect();
+              const mapContainerRect = map.getContainer().getBoundingClientRect();
+              const popupRect = popupElement.getBoundingClientRect();
 
-            const overflowTop = mapContainerRect.top - popupRect.top;
-            const overflowBottom = popupRect.bottom - mapContainerRect.bottom;
+              const overflowTop = mapContainerRect.top - popupRect.top;
+              const overflowBottom = popupRect.bottom - mapContainerRect.bottom;
 
-            let offsetY = 0;
-            if (overflowTop > 0) {
-              offsetY = -overflowTop;
-            } else if (overflowBottom > 0) {
-              offsetY = overflowBottom;
-            }
+              let offsetY = 0;
+              if (overflowTop > 0) {
+                offsetY = -overflowTop;
+              } else if (overflowBottom > 0) {
+                offsetY = overflowBottom;
+              }
 
-            if (offsetY !== 0) {
-              map.panBy([0, offsetY], { animate: true });
-            }
+              if (offsetY !== 0) {
+                map.panBy([0, offsetY], { animate: true });
+              }
+            }, 100); // Wait 100ms to ensure popup is fully rendered
           });
 
           statusLayers[status].addLayer(marker);
