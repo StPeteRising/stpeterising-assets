@@ -87,7 +87,18 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
           `;
 
-          marker.bindPopup(popupHtml);
+          // Bind popup and add click handler to pan map if near top
+          marker.bindPopup(popupHtml).on('click', function (e) {
+            const mapHeight = map.getSize().y;
+            const popupHeightEstimate = 200; // Approximate popup height in pixels
+            const offsetY = popupHeightEstimate / 2;
+
+            const markerPoint = map.latLngToContainerPoint(e.latlng);
+            if (markerPoint.y < offsetY) {
+              map.panBy([0, -offsetY + markerPoint.y], { animate: true });
+            }
+          });
+
           statusLayers[status].addLayer(marker);
         }
       });
