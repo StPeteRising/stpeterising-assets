@@ -87,15 +87,28 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
           `;
 
-          // Bind popup and add click handler to pan map if near top
-          marker.bindPopup(popupHtml).on('click', function (e) {
-            const mapHeight = map.getSize().y;
-            const popupHeightEstimate = 200; // Approximate popup height in pixels
-            const offsetY = popupHeightEstimate / 2;
+          marker.bindPopup(popupHtml);
 
-            const markerPoint = map.latLngToContainerPoint(e.latlng);
-            if (markerPoint.y < offsetY) {
-              map.panBy([0, -offsetY + markerPoint.y], { animate: true });
+          marker.on('popupopen', (e) => {
+            const popup = e.popup;
+            const popupElement = popup.getElement();
+            if (!popupElement) return;
+
+            const mapContainerRect = map.getContainer().getBoundingClientRect();
+            const popupRect = popupElement.getBoundingClientRect();
+
+            const overflowTop = mapContainerRect.top - popupRect.top;
+            const overflowBottom = popupRect.bottom - mapContainerRect.bottom;
+
+            let offsetY = 0;
+            if (overflowTop > 0) {
+              offsetY = -overflowTop;
+            } else if (overflowBottom > 0) {
+              offsetY = overflowBottom;
+            }
+
+            if (offsetY !== 0) {
+              map.panBy([0, offsetY], { animate: true });
             }
           });
 
