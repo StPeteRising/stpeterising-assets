@@ -21,10 +21,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const activeStatuses = new Set(Object.keys(iconURLs).filter(status => status !== "Cancelled"));
-
   const statusLayers = {};
 
-  // Initialize the map with fullscreen control enabled
   const map = L.map('project-map', {
     center: [27.773, -82.64],
     zoom: 13,
@@ -71,7 +69,13 @@ document.addEventListener("DOMContentLoaded", () => {
               <div><strong>Address:</strong> ${project.Address || ''}</div>
               <div><strong>Class:</strong> ${project.Class || ''}</div>
               <div><strong>Floors:</strong> ${project.Floors || ''}</div>
-              <div><strong>Units:</strong> ${project.Units || ''}</div>
+              ${
+                project.Class === "Office"
+                  ? `<div><strong>Square Footage:</strong> ${project["Office Square Footage"] || ''}</div>`
+                  : project.Class === "Retail"
+                  ? `<div><strong>Square Footage:</strong> ${project["Retail Square Footage"] || ''}</div>`
+                  : `<div><strong>Units:</strong> ${project.Units || ''}</div>`
+              }
               <div><strong>Completion:</strong> ${project.Completion || ''}</div>
               ${project.Rendering ? `<img src="${project.Rendering}" alt="Rendering" style="max-width:100%; margin-top: 8px; cursor:pointer;" onclick="window.open('${project.Rendering}', '_blank')" />` : ''}
               ${project.Slug ? `
