@@ -32,6 +32,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Address search control (Leaflet Control Geocoder)
+  L.Control.geocoder({
+    defaultMarkGeocode: false,
+    geocoder: L.Control.Geocoder.nominatim(),
+    placeholder: "Search by address...",
+  })
+  .on('markgeocode', function(e) {
+    const bbox = e.geocode.bbox;
+    const bounds = L.latLngBounds(bbox);
+    map.fitBounds(bounds);
+  })
+  .addTo(map);
+
   L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`, {
     tileSize: 512,
     zoomOffset: -1,
@@ -105,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
               const paddingBottom = 10;
               const paddingLeft = 10;
               const paddingRight = 10;
-              const verticalBuffer = 80;  // NEW: additional space above popup
+              const verticalBuffer = 80;
 
               let offsetX = 0;
               let offsetY = 0;
