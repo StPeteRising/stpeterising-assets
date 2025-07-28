@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
               const paddingBottom = 10;
               const paddingLeft = 10;
               const paddingRight = 10;
-              const verticalBuffer = 125;  // NEW: additional space above popup
+              const verticalBuffer = 120;  // NEW: additional space above popup
 
               let offsetX = 0;
               let offsetY = 0;
