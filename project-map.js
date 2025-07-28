@@ -112,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
               let offsetY = 0;
 
               if (containerPoint.y - popupHeight < paddingTop) {
-                offsetY = containerPoint.y - popupHeight - paddingTop - extraBuffer;
+                offsetY = -(paddingTop + extraBuffer - (containerPoint.y - popupHeight));
               }
               if (containerPoint.y + paddingBottom > mapSize.y) {
                 offsetY = containerPoint.y + paddingBottom - mapSize.y;
