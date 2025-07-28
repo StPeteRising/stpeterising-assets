@@ -87,31 +87,35 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
           `;
 
-          marker.bindPopup(popupHtml);
+          // Disable Leaflet's default popup autoPan
+          marker.bindPopup(popupHtml, { autoPan: false });
 
+          // Custom pan to show popup fully with extra padding
           marker.on('popupopen', (e) => {
             setTimeout(() => {
               const popup = e.popup;
-              const popupElement = popup.getElement();
-              if (!popupElement) return;
+              const popupEl = popup.getElement();
+              if (!popupEl) return;
 
-              const mapContainerRect = map.getContainer().getBoundingClientRect();
-              const popupRect = popupElement.getBoundingClientRect();
+              const mapRect = map.getContainer().getBoundingClientRect();
+              const popupRect = popupEl.getBoundingClientRect();
 
-              const overflowTop = mapContainerRect.top - popupRect.top;
-              const overflowBottom = popupRect.bottom - mapContainerRect.bottom;
+              const paddingTop = 20;   // extra padding from top
+              const paddingBottom = 10;
 
               let offsetY = 0;
-              if (overflowTop > 0) {
-                offsetY = -overflowTop;
-              } else if (overflowBottom > 0) {
-                offsetY = overflowBottom;
+
+              if (popupRect.top < mapRect.top + paddingTop) {
+                offsetY = (mapRect.top + paddingTop) - popupRect.top;
+              } else if (popupRect.bottom > mapRect.bottom - paddingBottom) {
+                offsetY = (mapRect.bottom - paddingBottom) - popupRect.bottom;
               }
 
               if (offsetY !== 0) {
-                map.panBy([0, offsetY], { animate: true });
+                // Pan in opposite direction (negative) to move popup fully into view
+                map.panBy([0, -offsetY], { animate: true });
               }
-            }, 100); // Wait 100ms to ensure popup is fully rendered
+            }, 50);
           });
 
           statusLayers[status].addLayer(marker);
