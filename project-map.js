@@ -101,16 +101,18 @@ document.addEventListener("DOMContentLoaded", () => {
               const popupHeight = popupElement.offsetHeight;
               const popupWidth = popupElement.offsetWidth;
 
-              const paddingTop = 80;
+              const paddingTop = 40;
               const paddingBottom = 10;
               const paddingLeft = 10;
               const paddingRight = 10;
+
+              const extraBuffer = 30; // extra space above popup
 
               let offsetX = 0;
               let offsetY = 0;
 
               if (containerPoint.y - popupHeight < paddingTop) {
-                offsetY = containerPoint.y - popupHeight - paddingTop;
+                offsetY = containerPoint.y - popupHeight - paddingTop - extraBuffer;
               }
               if (containerPoint.y + paddingBottom > mapSize.y) {
                 offsetY = containerPoint.y + paddingBottom - mapSize.y;
