@@ -87,10 +87,8 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
           `;
 
-          // Disable Leaflet's default popup autoPan
           marker.bindPopup(popupHtml, { autoPan: false });
 
-          // Custom pan to ensure popup is fully visible with extra padding
           marker.on('popupopen', (e) => {
             setTimeout(() => {
               const popup = e.popup;
@@ -103,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
               const popupHeight = popupElement.offsetHeight;
               const popupWidth = popupElement.offsetWidth;
 
-              const paddingTop = 40;  // extra padding on top
+              const paddingTop = 40;
               const paddingBottom = 10;
               const paddingLeft = 10;
               const paddingRight = 10;
@@ -111,26 +109,21 @@ document.addEventListener("DOMContentLoaded", () => {
               let offsetX = 0;
               let offsetY = 0;
 
-              // Check top overflow
               if (containerPoint.y - popupHeight < paddingTop) {
                 offsetY = containerPoint.y - popupHeight - paddingTop;
               }
-              // Check bottom overflow
               if (containerPoint.y + paddingBottom > mapSize.y) {
                 offsetY = containerPoint.y + paddingBottom - mapSize.y;
               }
-              // Check left overflow
               if (containerPoint.x - popupWidth / 2 < paddingLeft) {
                 offsetX = containerPoint.x - popupWidth / 2 - paddingLeft;
               }
-              // Check right overflow
               if (containerPoint.x + popupWidth / 2 > mapSize.x - paddingRight) {
                 offsetX = containerPoint.x + popupWidth / 2 - (mapSize.x - paddingRight);
               }
 
-              // Pan in the opposite direction to bring popup fully into view
               if (offsetX !== 0 || offsetY !== 0) {
-                map.panBy([-offsetX, -offsetY], { animate: true });
+                map.panBy([offsetX, offsetY], { animate: true });
               }
             }, 50);
           });
