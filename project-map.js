@@ -105,15 +105,13 @@ document.addEventListener("DOMContentLoaded", () => {
               const paddingBottom = 10;
               const paddingLeft = 10;
               const paddingRight = 10;
-              const extraBuffer = 80;  // increased buffer for more space above popup
+              const verticalBuffer = 40;  // NEW: additional space above popup
 
               let offsetX = 0;
               let offsetY = 0;
 
-              const popupTop = containerPoint.y - popupHeight;
-
-              if (popupTop < paddingTop + extraBuffer) {
-                offsetY = popupTop - (paddingTop + extraBuffer); // negative to pan up more
+              if (containerPoint.y - popupHeight < paddingTop + verticalBuffer) {
+                offsetY = containerPoint.y - popupHeight - paddingTop - verticalBuffer;
               }
               if (containerPoint.y + paddingBottom > mapSize.y) {
                 offsetY = containerPoint.y + paddingBottom - mapSize.y;
