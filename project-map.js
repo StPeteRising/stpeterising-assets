@@ -90,30 +90,47 @@ document.addEventListener("DOMContentLoaded", () => {
           // Disable Leaflet's default popup autoPan
           marker.bindPopup(popupHtml, { autoPan: false });
 
-          // Custom pan to show popup fully with extra padding
+          // Custom pan to ensure popup is fully visible with extra padding
           marker.on('popupopen', (e) => {
             setTimeout(() => {
               const popup = e.popup;
-              const popupEl = popup.getElement();
-              if (!popupEl) return;
+              const mapSize = map.getSize();
+              const containerPoint = map.latLngToContainerPoint(popup.getLatLng());
+              const popupElement = popup.getElement();
 
-              const mapRect = map.getContainer().getBoundingClientRect();
-              const popupRect = popupEl.getBoundingClientRect();
+              if (!popupElement) return;
 
-              const paddingTop = 20;   // extra padding from top
+              const popupHeight = popupElement.offsetHeight;
+              const popupWidth = popupElement.offsetWidth;
+
+              const paddingTop = 40;  // extra padding on top
               const paddingBottom = 10;
+              const paddingLeft = 10;
+              const paddingRight = 10;
 
+              let offsetX = 0;
               let offsetY = 0;
 
-              if (popupRect.top < mapRect.top + paddingTop) {
-                offsetY = (mapRect.top + paddingTop) - popupRect.top;
-              } else if (popupRect.bottom > mapRect.bottom - paddingBottom) {
-                offsetY = (mapRect.bottom - paddingBottom) - popupRect.bottom;
+              // Check top overflow
+              if (containerPoint.y - popupHeight < paddingTop) {
+                offsetY = containerPoint.y - popupHeight - paddingTop;
+              }
+              // Check bottom overflow
+              if (containerPoint.y + paddingBottom > mapSize.y) {
+                offsetY = containerPoint.y + paddingBottom - mapSize.y;
+              }
+              // Check left overflow
+              if (containerPoint.x - popupWidth / 2 < paddingLeft) {
+                offsetX = containerPoint.x - popupWidth / 2 - paddingLeft;
+              }
+              // Check right overflow
+              if (containerPoint.x + popupWidth / 2 > mapSize.x - paddingRight) {
+                offsetX = containerPoint.x + popupWidth / 2 - (mapSize.x - paddingRight);
               }
 
-              if (offsetY !== 0) {
-                // Pan in opposite direction (negative) to move popup fully into view
-                map.panBy([0, -offsetY], { animate: true });
+              // Pan in the opposite direction to bring popup fully into view
+              if (offsetX !== 0 || offsetY !== 0) {
+                map.panBy([-offsetX, -offsetY], { animate: true });
               }
             }, 50);
           });
