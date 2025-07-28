@@ -32,10 +32,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Address search control (Leaflet Control Geocoder)
+  // Address search control (Leaflet Control Geocoder) with Pinellas County bounding box restriction
   L.Control.geocoder({
     defaultMarkGeocode: false,
-    geocoder: L.Control.Geocoder.nominatim(),
+    geocoder: L.Control.Geocoder.nominatim({
+      geocodingQueryParams: {
+        viewbox: "-82.9000,28.2000,-82.4000,27.6000", // west, north, east, south (Pinellas County)
+        bounded: 1
+      }
+    }),
     placeholder: "Search by address...",
   })
   .on('markgeocode', function(e) {
