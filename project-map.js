@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
               const popupHeight = popupElement.offsetHeight;
               const popupWidth = popupElement.offsetWidth;
 
-              const paddingTop = 40;
+              const paddingTop = 80;
               const paddingBottom = 10;
               const paddingLeft = 10;
               const paddingRight = 10;
