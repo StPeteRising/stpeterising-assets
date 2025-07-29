@@ -235,7 +235,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Add search input and dropdown to map controls
   function addSearchControl() {
     // Create container div for control
-    const searchControl = L.control({ position: 'topleft' });
+    const searchControl = L.control({ position: 'topleft' }); // Changed position to 'topleft'
 
     searchControl.onAdd = function () {
       const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
@@ -245,6 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
       container.style.minWidth = '250px';
       container.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
       container.style.fontFamily = 'Arial, sans-serif';
+      container.style.position = 'relative'; // For dropdown absolute positioning
 
       // Create input
       const input = L.DomUtil.create('input', '', container);
@@ -295,7 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        filtered.forEach((proj, i) => {
+        filtered.forEach((proj) => {
           if (!proj.marker) return; // skip projects without marker
 
           const li = document.createElement('li');
@@ -310,9 +311,31 @@ document.addEventListener("DOMContentLoaded", () => {
             input.value = proj["Project Name"];
             dropdown.style.display = 'none';
 
-            const latLng = proj.marker.getLatLng();
-            map.setView(latLng, 16);
-            proj.marker.openPopup();
+            const marker = proj.marker;
+
+            // Get the cluster group
+            const clusterGroup = markers;
+
+            // Get the cluster this marker belongs to, if any
+            const parentCluster = clusterGroup.getVisibleParent(marker);
+
+            if (parentCluster && parentCluster !== marker) {
+              // Spiderfy the cluster
+              clusterGroup.spiderfy();
+
+              // Zoom to cluster bounds
+              map.fitBounds(parentCluster.getBounds(), { maxZoom: 18 });
+
+              // Wait a bit for spiderfy animation, then open popup on marker
+              setTimeout(() => {
+                marker.openPopup();
+              }, 500);
+            } else {
+              // Just center and open popup if not clustered
+              const latLng = marker.getLatLng();
+              map.setView(latLng, 16);
+              marker.openPopup();
+            }
           });
 
           dropdown.appendChild(li);
