@@ -235,7 +235,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Add search input and dropdown to map controls
   function addSearchControl() {
     // Create container div for control
-    const searchControl = L.control({ position: 'topleft' });
+    const searchControl = L.control({ position: 'topleft' }); // moved to topleft as you requested
 
     searchControl.onAdd = function () {
       const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
@@ -245,7 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
       container.style.minWidth = '250px';
       container.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
       container.style.fontFamily = 'Arial, sans-serif';
-      container.style.position = 'relative';
+      container.style.position = 'relative'; // for dropdown absolute positioning
 
       // Create input
       const input = L.DomUtil.create('input', '', container);
@@ -296,7 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        filtered.forEach(proj => {
+        filtered.forEach((proj) => {
           if (!proj.marker) return; // skip projects without marker
 
           const li = document.createElement('li');
@@ -314,27 +314,32 @@ document.addEventListener("DOMContentLoaded", () => {
             const marker = proj.marker;
             const clusterGroup = markers;
 
-            // Find the visible parent cluster of the marker
+            // Find visible parent cluster of the marker (returns cluster or marker)
             const parentCluster = clusterGroup.getVisibleParent(marker);
 
             if (parentCluster && parentCluster !== marker) {
-              // Zoom to cluster bounds first, then spiderfy and open popup
+              // Zoom to cluster bounds first
               map.fitBounds(parentCluster.getBounds(), { maxZoom: 18 });
 
-              // Wait for zoom animation to finish before spiderfying/opening popup
               map.once('moveend', () => {
-                // Spiderfy the cluster (expand the markers)
-                clusterGroup.spiderfy(parentCluster);
+                // Re-find the cluster marker at the current zoom
+                const currentCluster = clusterGroup.getVisibleParent(marker);
 
-                // Open popup after a short delay to ensure spiderfy completed
-                setTimeout(() => {
+                if (currentCluster && currentCluster !== marker) {
+                  clusterGroup.spiderfy(currentCluster);
+                  // Open popup after spiderfy animation delay
+                  setTimeout(() => {
+                    marker.openPopup();
+                  }, 300);
+                } else {
+                  // If cluster disappeared or marker is visible alone
+                  map.setView(marker.getLatLng(), 16);
                   marker.openPopup();
-                }, 300);
+                }
               });
             } else {
-              // Not clustered: just pan and open popup
-              const latLng = marker.getLatLng();
-              map.setView(latLng, 16);
+              // Not clustered: pan and open popup immediately
+              map.setView(marker.getLatLng(), 16);
               marker.openPopup();
             }
           });
