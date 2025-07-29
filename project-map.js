@@ -235,7 +235,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Add search input and dropdown to map controls
   function addSearchControl() {
     // Create container div for control
-    const searchControl = L.control({ position: 'topright' });
+    const searchControl = L.control({ position: 'topleft' });
 
     searchControl.onAdd = function () {
       const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
