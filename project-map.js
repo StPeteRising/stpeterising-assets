@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Initialize the Leaflet Control Geocoder for address searching
+  // Initialize the geocoder control with Pinellas County bounding box restriction
   const geocoderControl = L.Control.geocoder({
     defaultMarkGeocode: false,
     geocoder: L.Control.Geocoder.nominatim({
@@ -47,6 +47,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const bbox = e.geocode.bbox;
     const bounds = L.latLngBounds(bbox);
     map.fitBounds(bounds);
+
+    // Reset marker clusters to show all active statuses
+    markers.clearLayers();
+    for (const status of activeStatuses) {
+      markers.addLayer(statusLayers[status]);
+    }
   })
   .addTo(map);
 
@@ -67,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
     spiderfyOnMaxZoom: true,
   });
 
-  let allProjects = []; // Save all project data for filtering
+  let allProjects = [];
 
   fetch(sheetURL)
     .then(res => res.json())
@@ -164,8 +170,9 @@ document.addEventListener("DOMContentLoaded", () => {
       createLegend(iconURLs, statusLayers, markers, activeStatuses);
       setupLegendToggle();
 
-      // After everything is loaded, setup the combined search listener:
-      setupSearchInputListener();
+      // Setup project name dropdown for search input
+      const searchInput = document.querySelector('.leaflet-control-geocoder-form input[type="search"]');
+      setupProjectNameDropdown(searchInput, allProjects, statusLayers, markers, map, activeStatuses, geocoderControl);
     })
     .catch(err => {
       console.error("Error loading map data:", err);
@@ -247,22 +254,36 @@ document.addEventListener("DOMContentLoaded", () => {
     container.insertBefore(toggleBtn, container.firstChild);
   }
 
-  function setupSearchInputListener() {
-    // Select the search input from the Leaflet Control Geocoder UI
-    const searchInput = document.querySelector('.leaflet-control-geocoder-form input[type="search"]');
-    if (!searchInput) return;
+  // This function adds a dropdown under the geocoder search input to show matching project names when no address results found.
+  function setupProjectNameDropdown(searchInput, allProjects, statusLayers, markers, map, activeStatuses, geocoderControl) {
+    // Create dropdown container
+    const dropdown = document.createElement('ul');
+    dropdown.style.position = 'absolute';
+    dropdown.style.background = 'white';
+    dropdown.style.border = '1px solid #ccc';
+    dropdown.style.zIndex = 2000;
+    dropdown.style.listStyle = 'none';
+    dropdown.style.padding = '0';
+    dropdown.style.margin = '2px 0 0 0';
+    dropdown.style.maxHeight = '150px';
+    dropdown.style.overflowY = 'auto';
+    dropdown.style.width = searchInput.offsetWidth + 'px';
+    dropdown.style.display = 'none';
 
-    let debounceTimeout = null;
+    // Ensure parent of searchInput is relative positioned for absolute dropdown
+    searchInput.parentNode.style.position = 'relative';
+    searchInput.parentNode.appendChild(dropdown);
+
+    let debounceTimeout;
 
     searchInput.addEventListener('input', () => {
-      // Debounce to limit rapid search calls
-      if (debounceTimeout) clearTimeout(debounceTimeout);
-
+      clearTimeout(debounceTimeout);
       debounceTimeout = setTimeout(() => {
         const query = searchInput.value.trim().toLowerCase();
 
         if (!query) {
-          // Show all markers if query is empty
+          dropdown.style.display = 'none';
+          // Show all markers again
           markers.clearLayers();
           for (const status of activeStatuses) {
             markers.addLayer(statusLayers[status]);
@@ -270,57 +291,111 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        // Try to use the geocoder for address search first
+        // Try address search first
         geocoderControl.options.geocoder.geocode(query, (results) => {
-          // Filter results to Pinellas County bounds, if any
-          const filteredResults = results.filter(result => {
-            const bbox = result.bbox;
-            if (!bbox) return false;
-            // Pinellas County bbox: west, north, east, south
-            const pinellasWest = -82.9000;
-            const pinellasNorth = 28.2000;
-            const pinellasEast = -82.4000;
-            const pinellasSouth = 27.6000;
-            return bbox[0] >= pinellasWest && bbox[2] <= pinellasEast && bbox[1] <= pinellasNorth && bbox[3] >= pinellasSouth;
-          });
-
-          if (filteredResults.length) {
-            // If found address results, show the first on the map
-            const bbox = filteredResults[0].bbox;
+          if (results.length > 0) {
+            // Address found - hide project dropdown & zoom to first result
+            dropdown.style.display = 'none';
+            const bbox = results[0].bbox;
             const bounds = L.latLngBounds(bbox);
             map.fitBounds(bounds);
 
-            // Also clear project name filtering, show all markers
+            // Show all markers again
             markers.clearLayers();
             for (const status of activeStatuses) {
               markers.addLayer(statusLayers[status]);
             }
           } else {
-            // No address found - treat as project name search
-            markers.clearLayers();
+            // No address found, filter projects by name substring
+            const filtered = allProjects.filter(p => p["Project Name"] && p["Project Name"].toLowerCase().includes(query));
 
-            for (const status of activeStatuses) {
-              const filteredMarkers = statusLayers[status].getLayers().filter(marker => {
-                const projectName = (marker.options.projectName || '').toLowerCase();
-                return projectName.includes(query);
-              });
-              filteredMarkers.forEach(m => markers.addLayer(m));
+            // Clear previous dropdown entries
+            dropdown.innerHTML = '';
+
+            if (filtered.length === 0) {
+              dropdown.style.display = 'none';
+              markers.clearLayers();
+              return;
             }
 
-            // Optional: zoom to all filtered markers if any
-            const filteredAllMarkers = [];
+            // Populate dropdown with up to 10 project name matches
+            filtered.slice(0, 10).forEach(proj => {
+              const item = document.createElement('li');
+              item.style.padding = '6px 10px';
+              item.style.cursor = 'pointer';
+              item.style.borderBottom = '1px solid #eee';
+              item.textContent = proj["Project Name"];
+              item.title = proj.Address || '';
+
+              item.addEventListener('mouseenter', () => {
+                item.style.backgroundColor = '#007BFF';
+                item.style.color = 'white';
+              });
+              item.addEventListener('mouseleave', () => {
+                item.style.backgroundColor = 'white';
+                item.style.color = 'black';
+              });
+
+              item.addEventListener('click', () => {
+                // Find marker for clicked project name
+                let foundMarker = null;
+                for (const status of activeStatuses) {
+                  const candidates = statusLayers[status].getLayers();
+                  for (const m of candidates) {
+                    if ((m.options.projectName || '') === proj["Project Name"]) {
+                      foundMarker = m;
+                      break;
+                    }
+                  }
+                  if (foundMarker) break;
+                }
+
+                if (foundMarker) {
+                  // Zoom and open popup
+                  map.setView(foundMarker.getLatLng(), 17);
+                  foundMarker.openPopup();
+
+                  // Hide dropdown and set input value
+                  dropdown.style.display = 'none';
+                  searchInput.value = proj["Project Name"];
+                }
+              });
+
+              dropdown.appendChild(item);
+            });
+
+            dropdown.style.display = 'block';
+
+            // Filter markers on map to show only filtered projects
+            markers.clearLayers();
+            filtered.forEach(proj => {
+              for (const status of activeStatuses) {
+                const filteredMarkers = statusLayers[status].getLayers().filter(marker => (marker.options.projectName || '') === proj["Project Name"]);
+                filteredMarkers.forEach(m => markers.addLayer(m));
+              }
+            });
+
+            // Zoom map to fit all filtered markers
+            const filteredMarkers = [];
             for (const status of activeStatuses) {
-              filteredAllMarkers.push(...statusLayers[status].getLayers().filter(marker => {
-                return (marker.options.projectName || '').toLowerCase().includes(query);
+              filteredMarkers.push(...statusLayers[status].getLayers().filter(marker => {
+                return filtered.some(p => p["Project Name"] === (marker.options.projectName || ''));
               }));
             }
-            if (filteredAllMarkers.length) {
-              const group = L.featureGroup(filteredAllMarkers);
+            if (filteredMarkers.length) {
+              const group = L.featureGroup(filteredMarkers);
               map.fitBounds(group.getBounds().pad(0.5));
             }
           }
         });
-      }, 300); // debounce delay 300ms
+      }, 250);
+    });
+
+    // Hide dropdown if clicking outside search input or dropdown
+    document.addEventListener('click', (e) => {
+      if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.style.display = 'none';
+      }
     });
   }
 });
