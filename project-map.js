@@ -32,24 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Address search control (Leaflet Control Geocoder) with Pinellas County bounding box restriction
-  L.Control.geocoder({
-    defaultMarkGeocode: false,
-    geocoder: L.Control.Geocoder.nominatim({
-      geocodingQueryParams: {
-        viewbox: "-82.9000,28.2000,-82.4000,27.6000", // west, north, east, south (Pinellas County)
-        bounded: 1
-      }
-    }),
-    placeholder: "Search by address...",
-  })
-  .on('markgeocode', function(e) {
-    const bbox = e.geocode.bbox;
-    const bounds = L.latLngBounds(bbox);
-    map.fitBounds(bounds);
-  })
-  .addTo(map);
-
   L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`, {
     tileSize: 512,
     zoomOffset: -1,
@@ -67,9 +49,32 @@ document.addEventListener("DOMContentLoaded", () => {
     spiderfyOnMaxZoom: true,
   });
 
+  // We'll store all projects here after fetch
+  let allProjects = [];
+
+  // Initialize the geocoder control (address search)
+  const geocoderControl = L.Control.geocoder({
+    defaultMarkGeocode: false,
+    geocoder: L.Control.Geocoder.nominatim({
+      geocodingQueryParams: {
+        viewbox: "-82.9000,28.2000,-82.4000,27.6000", // Pinellas County bounding box
+        bounded: 1
+      }
+    }),
+    placeholder: "Search by address or project name...",
+  })
+  .on('markgeocode', function(e) {
+    const bbox = e.geocode.bbox;
+    const bounds = L.latLngBounds(bbox);
+    map.fitBounds(bounds);
+  })
+  .addTo(map);
+
   fetch(sheetURL)
     .then(res => res.json())
     .then(data => {
+      allProjects = data;
+
       data.forEach(project => {
         const lat = parseFloat(project.Lat);
         const lng = parseFloat(project.Lng);
@@ -148,6 +153,9 @@ document.addEventListener("DOMContentLoaded", () => {
           });
 
           statusLayers[status].addLayer(marker);
+
+          // Store marker reference on project for easy lookup
+          project._marker = marker;
         }
       });
 
@@ -158,6 +166,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       createLegend(iconURLs, statusLayers, markers, activeStatuses);
       setupLegendToggle();
+
+      setupProjectNameSearch(allProjects, markers, map);
     })
     .catch(err => {
       console.error("Error loading map data:", err);
@@ -237,5 +247,104 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     container.insertBefore(toggleBtn, container.firstChild);
+  }
+
+  // --- New function to setup combined project name search ---
+  function setupProjectNameSearch(allProjects, markers, map) {
+    // Wait for geocoder input to be added to DOM
+    const inputSelector = '.leaflet-control-geocoder-form input[type="text"]';
+
+    const waitForInput = () => {
+      const input = document.querySelector(inputSelector);
+      if (!input) {
+        setTimeout(waitForInput, 100);
+        return;
+      }
+
+      // Create container for dropdown results
+      let dropdown = document.createElement('div');
+      dropdown.style.position = 'absolute';
+      dropdown.style.background = 'white';
+      dropdown.style.border = '1px solid #ccc';
+      dropdown.style.maxHeight = '200px';
+      dropdown.style.overflowY = 'auto';
+      dropdown.style.width = input.offsetWidth + 'px';
+      dropdown.style.zIndex = 10000;
+      dropdown.style.display = 'none';
+      dropdown.style.cursor = 'pointer';
+      dropdown.style.fontSize = '14px';
+      dropdown.style.fontFamily = 'Arial, sans-serif';
+      dropdown.style.borderRadius = '4px';
+
+      input.parentNode.style.position = 'relative';
+      input.parentNode.appendChild(dropdown);
+
+      // Position dropdown below input
+      const updateDropdownPosition = () => {
+        const rect = input.getBoundingClientRect();
+        dropdown.style.top = input.offsetHeight + 'px';
+        dropdown.style.left = '0px';
+        dropdown.style.width = input.offsetWidth + 'px';
+      };
+      updateDropdownPosition();
+
+      input.addEventListener('input', () => {
+        const query = input.value.trim().toLowerCase();
+
+        if (query.length < 2) {
+          dropdown.style.display = 'none';
+          return;
+        }
+
+        // Find matching projects by project name
+        const matches = allProjects.filter(p =>
+          p["Project Name"] && p["Project Name"].toLowerCase().includes(query)
+        );
+
+        if (matches.length === 0) {
+          dropdown.style.display = 'none';
+          return;
+        }
+
+        dropdown.innerHTML = '';
+        matches.forEach(project => {
+          const item = document.createElement('div');
+          item.textContent = project["Project Name"];
+          item.style.padding = '6px 10px';
+          item.style.borderBottom = '1px solid #eee';
+
+          item.addEventListener('mouseenter', () => {
+            item.style.backgroundColor = '#f0f0f0';
+          });
+          item.addEventListener('mouseleave', () => {
+            item.style.backgroundColor = '';
+          });
+
+          item.addEventListener('click', () => {
+            dropdown.style.display = 'none';
+            input.value = project["Project Name"];
+
+            // Pan to project marker and open popup
+            if (project._marker) {
+              map.setView(project._marker.getLatLng(), 16);
+              project._marker.openPopup();
+            }
+          });
+
+          dropdown.appendChild(item);
+        });
+
+        dropdown.style.display = 'block';
+      });
+
+      // Hide dropdown when input loses focus (with slight delay so click can register)
+      input.addEventListener('blur', () => {
+        setTimeout(() => {
+          dropdown.style.display = 'none';
+        }, 200);
+      });
+    };
+
+    waitForInput();
   }
 });
