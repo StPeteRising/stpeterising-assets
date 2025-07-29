@@ -103,3 +103,57 @@
 .leaflet-control-attribution {
   display: none !important;
 }
+
+/* Search Input Styling */
+#project-search-input {
+  width: 250px;
+  padding: 8px 36px 8px 12px; /* space for icon on right */
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  font-size: 14px;
+  outline: none;
+  transition: box-shadow 0.3s ease;
+  box-sizing: border-box;
+  background: white url('data:image/svg+xml;utf8,<svg fill="gray" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M15.5 14h-.79l-.28-.27a6.471 6.471 0 001.48-5.34C15.11 5.1 12.28 3 9 3S2.89 5.1 2.89 8.39c0 3.29 2.83 5.39 6.11 5.39a6.48 6.48 0 005.34-1.48l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6.5 0a4.5 4.5 0 110-9 4.5 4.5 0 010 9z"/></svg>') no-repeat right 10px center;
+  background-size: 16px 16px;
+  cursor: text;
+  font-family: Arial, sans-serif;
+  margin: 10px 0;
+}
+
+#project-search-input::placeholder {
+  color: #999;
+}
+
+#project-search-input:focus {
+  border-color: #007BFF;
+  box-shadow: 0 0 8px rgba(0,123,255,0.5);
+}
+
+/* Autocomplete dropdown styling */
+#autocomplete-list {
+  position: absolute;
+  z-index: 1100;
+  background: white;
+  border: 1px solid #ccc;
+  border-top: none;
+  max-height: 200px;
+  overflow-y: auto;
+  width: 250px;
+  border-radius: 0 0 8px 8px;
+  box-sizing: border-box;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+}
+
+.autocomplete-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.active {
+  background-color: #007BFF;
+  color: white;
+}
