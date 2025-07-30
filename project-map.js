@@ -160,6 +160,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const legendContainer = document.getElementById('map-legend');
     if (!legendContainer) return;
 
+    // Prevent map interactions on the legend container (fix for rapid toggling)
+    L.DomEvent.disableClickPropagation(legendContainer);
+    L.DomEvent.disableScrollPropagation(legendContainer);
+
     legendContainer.innerHTML = '';
 
     for (const [status, iconUrl] of Object.entries(iconURLs)) {
