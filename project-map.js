@@ -160,10 +160,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const legendContainer = document.getElementById('map-legend');
     if (!legendContainer) return;
 
-    // Prevent map interactions on the legend container (fix for rapid toggling)
-    L.DomEvent.disableClickPropagation(legendContainer);
-    L.DomEvent.disableScrollPropagation(legendContainer);
-
     legendContainer.innerHTML = '';
 
     for (const [status, iconUrl] of Object.entries(iconURLs)) {
@@ -220,7 +216,9 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleBtn.style.fontSize = '14px';
     toggleBtn.style.userSelect = 'none';
 
-    toggleBtn.addEventListener('click', () => {
+    toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();  // Prevent click from bubbling up to the map, so popups don’t close
+
       const legend = document.getElementById('map-legend');
       if (!legend) return;
 
