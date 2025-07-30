@@ -172,9 +172,11 @@ document.addEventListener("DOMContentLoaded", () => {
       checkbox.style.marginRight = '8px';
       checkbox.id = `legend-checkbox-${status.replace(/\s+/g, '-')}`;
 
-      // Prevent map zoom on checkbox click:
-      checkbox.addEventListener('click', (e) => {
-        e.stopPropagation();
+      // Prevent map zoom on interactions with checkbox or label
+      const stopEvents = ['click', 'mousedown', 'mouseup', 'dblclick', 'touchstart', 'touchend'];
+      stopEvents.forEach(evt => {
+        checkbox.addEventListener(evt, e => e.stopPropagation());
+        item.addEventListener(evt, e => e.stopPropagation());
       });
 
       const img = document.createElement('img');
@@ -221,9 +223,12 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleBtn.style.fontSize = '14px';
     toggleBtn.style.userSelect = 'none';
 
-    toggleBtn.addEventListener('click', (e) => {
-      e.stopPropagation();  // Prevent legend toggle button click from closing popups or zooming map
+    // Prevent toggle button clicks from closing popups or zooming map
+    ['click', 'mousedown', 'mouseup', 'dblclick', 'touchstart', 'touchend'].forEach(evt => {
+      toggleBtn.addEventListener(evt, e => e.stopPropagation());
+    });
 
+    toggleBtn.addEventListener('click', () => {
       const legend = document.getElementById('map-legend');
       if (!legend) return;
 
@@ -242,7 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Add search input and dropdown to map controls
   function addSearchControl() {
     // Create container div for control
-    const searchControl = L.control({ position: 'topleft' }); // moved to topleft as you requested
+    const searchControl = L.control({ position: 'topleft' });
 
     searchControl.onAdd = function () {
       const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
@@ -252,7 +257,7 @@ document.addEventListener("DOMContentLoaded", () => {
       container.style.minWidth = '250px';
       container.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
       container.style.fontFamily = 'Arial, sans-serif';
-      container.style.position = 'relative'; // for dropdown absolute positioning
+      container.style.position = 'relative';
 
       // Create input
       const input = L.DomUtil.create('input', '', container);
@@ -304,7 +309,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         filtered.forEach((proj) => {
-          if (!proj.marker) return; // skip projects without marker
+          if (!proj.marker) return;
 
           const li = document.createElement('li');
           li.style.padding = '6px 8px';
@@ -321,31 +326,26 @@ document.addEventListener("DOMContentLoaded", () => {
             const marker = proj.marker;
             const clusterGroup = markers;
 
-            // Find visible parent cluster of the marker (returns cluster or marker)
             const parentCluster = clusterGroup.getVisibleParent(marker);
 
             if (parentCluster && parentCluster !== marker) {
-              // Zoom to cluster bounds first
               map.fitBounds(parentCluster.getBounds(), { maxZoom: 18 });
 
               map.once('moveend', () => {
-                // Re-find the cluster marker at the current zoom
                 const currentCluster = clusterGroup.getVisibleParent(marker);
 
                 if (currentCluster && currentCluster !== marker) {
                   clusterGroup.spiderfy(currentCluster);
-                  // Open popup after spiderfy animation delay
+
                   setTimeout(() => {
                     marker.openPopup();
                   }, 300);
                 } else {
-                  // If cluster disappeared or marker is visible alone
                   map.setView(marker.getLatLng(), 16);
                   marker.openPopup();
                 }
               });
             } else {
-              // Not clustered: pan and open popup immediately
               map.setView(marker.getLatLng(), 16);
               marker.openPopup();
             }
@@ -357,7 +357,6 @@ document.addEventListener("DOMContentLoaded", () => {
         dropdown.style.display = 'block';
       });
 
-      // Hide dropdown on blur, small timeout to allow click to register
       input.addEventListener('blur', () => {
         setTimeout(() => {
           dropdown.style.display = 'none';
