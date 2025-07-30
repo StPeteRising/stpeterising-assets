@@ -172,6 +172,11 @@ document.addEventListener("DOMContentLoaded", () => {
       checkbox.style.marginRight = '8px';
       checkbox.id = `legend-checkbox-${status.replace(/\s+/g, '-')}`;
 
+      // Prevent map zoom on checkbox click:
+      checkbox.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+
       const img = document.createElement('img');
       img.src = iconUrl;
       img.alt = status + ' icon';
@@ -217,7 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleBtn.style.userSelect = 'none';
 
     toggleBtn.addEventListener('click', (e) => {
-      e.stopPropagation();  // Prevent click from bubbling up to the map, so popups don’t close
+      e.stopPropagation();  // Prevent legend toggle button click from closing popups or zooming map
 
       const legend = document.getElementById('map-legend');
       if (!legend) return;
