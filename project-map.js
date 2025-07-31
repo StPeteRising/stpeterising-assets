@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Exclude Cancelled initially
   const activeStatuses = new Set(Object.keys(iconURLs).filter(status => status !== "Cancelled"));
   const statusLayers = {};
 
@@ -132,8 +133,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 50);
           });
 
+          // Add marker to status layer
           statusLayers[status].addLayer(marker);
-          markers.addLayer(marker);
+
+          // Only add marker to cluster group if status is active (checked)
+          if (activeStatuses.has(status)) {
+            markers.addLayer(marker);
+          }
         }
 
         return {
