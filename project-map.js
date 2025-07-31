@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <div><strong>Class:</strong> ${project.Class || ''}</div>
               <div><strong>Floors:</strong> ${project.Floors || ''}</div>
               ${
-                project.Class === "Office"
+                project.Class === "Office" || project.Class === "Civic"
                   ? `<div><strong>Square Footage:</strong> ${project["Office Square Footage"] || ''}</div>`
                   : project.Class === "Retail"
                   ? `<div><strong>Square Footage:</strong> ${project["Retail Square Footage"] || ''}</div>`
