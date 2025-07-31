@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ? `<span class="cancelled-tag">Cancelled</span>`
         : '';
 
-      // Dynamic label and value for Units or Square Feet based on Class
+      // Dynamic label and value for Units or Square Feet based on Class (includes Civic)
       const classValue = (project.Class || '').toLowerCase();
 
       let unitsOrSqFtLabel = 'Units';
@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (classValue === 'retail' && 'Retail Square Footage' in project) {
         unitsOrSqFtLabel = 'Square Feet';
         unitsOrSqFtValue = project['Retail Square Footage'] || '';
-      } else if (classValue === 'office' && 'Office Square Footage' in project) {
+      } else if ((classValue === 'office' || classValue === 'civic') && 'Office Square Footage' in project) {
         unitsOrSqFtLabel = 'Square Feet';
         unitsOrSqFtValue = project['Office Square Footage'] || '';
       }
