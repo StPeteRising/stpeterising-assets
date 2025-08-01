@@ -20,25 +20,40 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Exclude Cancelled initially
   const activeStatuses = new Set(Object.keys(iconURLs).filter(status => status !== "Cancelled"));
   const statusLayers = {};
+
+  // Define base layers
+  const outdoorsBase = L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`, {
+    tileSize: 512,
+    zoomOffset: -1,
+    attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="https://www.openstreetmap.org/about/">OpenStreetMap</a>',
+    maxZoom: 18,
+  });
+
+  const satelliteBase = L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`, {
+    tileSize: 512,
+    zoomOffset: -1,
+    attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="https://www.openstreetmap.org/about/">OpenStreetMap</a>',
+    maxZoom: 18,
+  });
+
+  const baseMaps = {
+    "Standard": outdoorsBase,
+    "Satellite": satelliteBase
+  };
 
   const map = L.map('project-map', {
     center: [27.773, -82.64],
     zoom: 13,
+    layers: [outdoorsBase],
     fullscreenControl: true,
     fullscreenControlOptions: {
       position: 'topright'
     }
   });
 
-  L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`, {
-    tileSize: 512,
-    zoomOffset: -1,
-    attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="https://www.openstreetmap.org/about/">OpenStreetMap</a>',
-    maxZoom: 18,
-  }).addTo(map);
+  L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
 
   for (const status of Object.keys(iconURLs)) {
     statusLayers[status] = L.layerGroup();
@@ -50,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
     spiderfyOnMaxZoom: true,
   });
 
-  let projects = [];  // Will hold all project data with markers
+  let projects = [];
 
   fetch(sheetURL)
     .then(res => res.json())
@@ -99,12 +114,10 @@ document.addEventListener("DOMContentLoaded", () => {
               const mapSize = map.getSize();
               const containerPoint = map.latLngToContainerPoint(popup.getLatLng());
               const popupElement = popup.getElement();
-
               if (!popupElement) return;
 
               const popupHeight = popupElement.offsetHeight;
               const popupWidth = popupElement.offsetWidth;
-
               const paddingTop = 40;
               const paddingBottom = 10;
               const paddingLeft = 10;
@@ -133,10 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 50);
           });
 
-          // Add marker to status layer
           statusLayers[status].addLayer(marker);
-
-          // Only add marker to cluster group if status is active (checked)
           if (activeStatuses.has(status)) {
             markers.addLayer(marker);
           }
@@ -155,8 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       createLegend(iconURLs, statusLayers, markers, activeStatuses);
       setupLegendToggle();
-
-      addSearchControl(); // Add search input and dropdown now that projects are loaded
+      addSearchControl();
     })
     .catch(err => {
       console.error("Error loading map data:", err);
@@ -178,9 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
       checkbox.style.marginRight = '8px';
       checkbox.id = `legend-checkbox-${status.replace(/\s+/g, '-')}`;
 
-      // Prevent map zoom on interactions with checkbox or label
-      const stopEvents = ['click', 'mousedown', 'mouseup', 'dblclick', 'touchstart', 'touchend'];
-      stopEvents.forEach(evt => {
+      ['click', 'mousedown', 'mouseup', 'dblclick', 'touchstart', 'touchend'].forEach(evt => {
         checkbox.addEventListener(evt, e => e.stopPropagation());
         item.addEventListener(evt, e => e.stopPropagation());
       });
@@ -205,7 +212,6 @@ document.addEventListener("DOMContentLoaded", () => {
       item.appendChild(checkbox);
       item.appendChild(img);
       item.appendChild(labelText);
-
       legendContainer.appendChild(item);
     }
   }
@@ -229,7 +235,6 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleBtn.style.fontSize = '14px';
     toggleBtn.style.userSelect = 'none';
 
-    // Prevent toggle button clicks from closing popups or zooming map
     ['click', 'mousedown', 'mouseup', 'dblclick', 'touchstart', 'touchend'].forEach(evt => {
       toggleBtn.addEventListener(evt, e => e.stopPropagation());
     });
@@ -250,9 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
     container.insertBefore(toggleBtn, container.firstChild);
   }
 
-  // Add search input and dropdown to map controls
   function addSearchControl() {
-    // Create container div for control
     const searchControl = L.control({ position: 'topleft' });
 
     searchControl.onAdd = function () {
@@ -265,7 +268,6 @@ document.addEventListener("DOMContentLoaded", () => {
       container.style.fontFamily = 'Arial, sans-serif';
       container.style.position = 'relative';
 
-      // Create input
       const input = L.DomUtil.create('input', '', container);
       input.type = 'search';
       input.placeholder = 'Search by address or project name...';
@@ -275,7 +277,6 @@ document.addEventListener("DOMContentLoaded", () => {
       input.style.borderRadius = '4px';
       input.autocomplete = 'off';
 
-      // Create dropdown container
       const dropdown = L.DomUtil.create('ul', 'search-dropdown', container);
       dropdown.style.listStyle = 'none';
       dropdown.style.padding = '0';
@@ -290,11 +291,9 @@ document.addEventListener("DOMContentLoaded", () => {
       dropdown.style.zIndex = '1000';
       dropdown.style.display = 'none';
 
-      // Prevent map interactions when interacting with control
       L.DomEvent.disableClickPropagation(container);
       L.DomEvent.disableScrollPropagation(container);
 
-      // Listen for input changes
       input.addEventListener('input', () => {
         const query = input.value.trim().toLowerCase();
         dropdown.innerHTML = '';
@@ -303,7 +302,6 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        // Filter projects by name or address includes query
         const filtered = projects.filter(proj => {
           return (proj["Project Name"] && proj["Project Name"].toLowerCase().includes(query))
             || (proj.Address && proj.Address.toLowerCase().includes(query));
@@ -331,7 +329,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const marker = proj.marker;
             const clusterGroup = markers;
-
             const parentCluster = clusterGroup.getVisibleParent(marker);
 
             if (parentCluster && parentCluster !== marker) {
@@ -339,10 +336,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
               map.once('moveend', () => {
                 const currentCluster = clusterGroup.getVisibleParent(marker);
-
                 if (currentCluster && currentCluster !== marker) {
                   clusterGroup.spiderfy(currentCluster);
-
                   setTimeout(() => {
                     marker.openPopup();
                   }, 300);
