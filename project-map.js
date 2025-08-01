@@ -1,6 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // ==== Your original map code start ====
-
   const sheetURL = 'https://opensheet.elk.sh/1e7n0NgW7swUmn6hqCW2KslFgVd3RJhQRiuVSaIY3A1c/Sheet1';
   const mapboxToken = 'pk.eyJ1Ijoic3RwZXRlcmlzaW5nIiwiYSI6ImNtZDZxb2lweDBib2Mya3BzZ2xrdmgxMDEifQ.QWBg7S51ggQ_jemRmD7nRw';
 
@@ -22,8 +20,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Exclude Cancelled initially
   const activeStatuses = new Set(Object.keys(iconURLs).filter(status => status !== "Cancelled"));
   const statusLayers = {};
+
+  const mapContainer = document.getElementById('project-map');
+  if (!mapContainer) {
+    console.error("Map container #project-map not found");
+    return;
+  }
 
   const map = L.map('project-map', {
     center: [27.773, -82.64],
@@ -49,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
     spiderfyOnMaxZoom: true,
   });
 
-  let projects = [];
+  let projects = [];  // Hold projects with markers
 
   fetch(sheetURL)
     .then(res => res.json())
@@ -61,7 +66,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         let marker = null;
         if (!isNaN(lat) && !isNaN(lng)) {
-          marker = L.marker([lat, lng], { icon: getCustomIcon(status) });
+          marker = L.marker([lat, lng], {
+            icon: getCustomIcon(status)
+          });
 
           const popupHtml = `
             <div class="popup-content" style="min-width: 250px;">
@@ -79,12 +86,14 @@ document.addEventListener("DOMContentLoaded", () => {
               }
               <div><strong>Completion:</strong> ${project.Completion || ''}</div>
               ${project.Rendering ? `<img src="${project.Rendering}" alt="Rendering" style="max-width:100%; margin-top: 8px; cursor:pointer;" onclick="window.open('${project.Rendering}', '_blank')" />` : ''}
-              ${project.Slug ? `<div style="margin-top: 8px;">
-                <a href="https://stpeterising.com/${project.Slug}" target="_blank" style="color: #007BFF; font-weight: bold; text-decoration: underline;">
-                View Project Page →
-                </a>
-              </div>` : ''}
-            </div>`;
+              ${project.Slug ? `
+                <div style="margin-top: 8px;">
+                  <a href="https://stpeterising.com/${project.Slug}" target="_blank" style="color: #007BFF; font-weight: bold; text-decoration: underline;">
+                    View Project Page →
+                  </a>
+                </div>` : ''}
+            </div>
+          `;
 
           marker.bindPopup(popupHtml, { autoPan: false });
 
@@ -94,36 +103,56 @@ document.addEventListener("DOMContentLoaded", () => {
               const mapSize = map.getSize();
               const containerPoint = map.latLngToContainerPoint(popup.getLatLng());
               const popupElement = popup.getElement();
+
               if (!popupElement) return;
 
               const popupHeight = popupElement.offsetHeight;
               const popupWidth = popupElement.offsetWidth;
 
-              const paddingTop = 40, paddingBottom = 10, paddingLeft = 10, paddingRight = 10, verticalBuffer = 80;
+              const paddingTop = 40;
+              const paddingBottom = 10;
+              const paddingLeft = 10;
+              const paddingRight = 10;
+              const verticalBuffer = 80;
 
-              let offsetX = 0, offsetY = 0;
+              let offsetX = 0;
+              let offsetY = 0;
 
-              if (containerPoint.y - popupHeight < paddingTop + verticalBuffer)
+              if (containerPoint.y - popupHeight < paddingTop + verticalBuffer) {
                 offsetY = containerPoint.y - popupHeight - paddingTop - verticalBuffer;
-              if (containerPoint.y + paddingBottom > mapSize.y)
+              }
+              if (containerPoint.y + paddingBottom > mapSize.y) {
                 offsetY = containerPoint.y + paddingBottom - mapSize.y;
-              if (containerPoint.x - popupWidth / 2 < paddingLeft)
+              }
+              if (containerPoint.x - popupWidth / 2 < paddingLeft) {
                 offsetX = containerPoint.x - popupWidth / 2 - paddingLeft;
-              if (containerPoint.x + popupWidth / 2 > mapSize.x - paddingRight)
+              }
+              if (containerPoint.x + popupWidth / 2 > mapSize.x - paddingRight) {
                 offsetX = containerPoint.x + popupWidth / 2 - (mapSize.x - paddingRight);
+              }
 
-              if (offsetX !== 0 || offsetY !== 0) map.panBy([offsetX, offsetY], { animate: true });
+              if (offsetX !== 0 || offsetY !== 0) {
+                map.panBy([offsetX, offsetY], { animate: true });
+              }
             }, 50);
           });
 
+          // Add to status layer
           statusLayers[status].addLayer(marker);
 
+          // Add to marker cluster if status active
           if (activeStatuses.has(status)) {
             markers.addLayer(marker);
           }
         }
 
-        return { ...project, marker, lat, lng, status };
+        return {
+          ...project,
+          marker,
+          lat,
+          lng,
+          status
+        };
       });
 
       map.addLayer(markers);
@@ -131,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
       createLegend(iconURLs, statusLayers, markers, activeStatuses);
       setupLegendToggle();
       addSearchControl();
-      addReportButtonAndModal(); // Add report button here, after map fully loads
+      insertReportButtonAndModal();
     })
     .catch(err => {
       console.error("Error loading map data:", err);
@@ -153,6 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
       checkbox.style.marginRight = '8px';
       checkbox.id = `legend-checkbox-${status.replace(/\s+/g, '-')}`;
 
+      // Prevent map zoom on checkbox/label interactions
       ['click', 'mousedown', 'mouseup', 'dblclick', 'touchstart', 'touchend'].forEach(evt => {
         checkbox.addEventListener(evt, e => e.stopPropagation());
         item.addEventListener(evt, e => e.stopPropagation());
@@ -222,6 +252,7 @@ document.addEventListener("DOMContentLoaded", () => {
     container.insertBefore(toggleBtn, container.firstChild);
   }
 
+  // Add search input/dropdown control
   function addSearchControl() {
     const searchControl = L.control({ position: 'topleft' });
 
@@ -279,7 +310,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        filtered.forEach((proj) => {
+        filtered.forEach(proj => {
           if (!proj.marker) return;
 
           const li = document.createElement('li');
@@ -340,19 +371,19 @@ document.addEventListener("DOMContentLoaded", () => {
     searchControl.addTo(map);
   }
 
-  // ==== Add Report Button and Modal after map loads ====
-  function addReportButtonAndModal() {
-    const mapContainer = document.querySelector('#project-map');
+  // Insert Report Button and Modal HTML, setup event handlers
+  function insertReportButtonAndModal() {
+    const mapContainer = document.getElementById('project-map');
     if (!mapContainer) return;
 
     // Create button wrapper
     const wrapper = document.createElement('div');
     wrapper.style.marginTop = '24px';
 
-    // Create report button
     const reportBtn = document.createElement('button');
     reportBtn.textContent = 'Report Data Error';
     reportBtn.id = 'report-data-error-btn';
+    reportBtn.style.margin = '0 0 0 0';
     reportBtn.style.backgroundColor = '#0081E0';
     reportBtn.style.color = '#fff';
     reportBtn.style.border = 'none';
@@ -368,20 +399,20 @@ document.addEventListener("DOMContentLoaded", () => {
     wrapper.appendChild(reportBtn);
     mapContainer.parentNode.insertBefore(wrapper, mapContainer.nextSibling);
 
-    // Inject modal HTML
+    // Modal HTML
     const modalHTML = `
-      <div id="data-error-modal" style="display: none; position: fixed; top: 0; left: 0;
-        width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);
-        justify-content: center; align-items: center; z-index: 9999;">
-        <div style="background: #fff; padding: 24px; border-radius: 8px; max-width: 420px; width: 100%; position: relative; font-family: sans-serif;">
-          <span id="data-error-close" style="position: absolute; top: 12px; right: 16px; font-size: 22px; cursor: pointer;">&times;</span>
-          <h3 style="margin-top: 0;">Report a Data Error</h3>
-          <textarea id="data-error-message" placeholder="Describe the issue..." style="width: 100%; height: 120px; margin-top: 10px; padding: 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
-          <button id="data-error-submit" style="margin-top: 12px; background-color: #0081E0; color: white; padding: 10px 16px; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">Submit</button>
-          <div id="data-error-success" style="display: none; color: green; margin-top: 10px;">Thank you! We'll review this shortly.</div>
-          <div id="data-error-error" style="display: none; color: red; margin-top: 10px;">Something went wrong. Please try again.</div>
-        </div>
+    <div id="data-error-modal" style="display: none; position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);
+      justify-content: center; align-items: center; z-index: 9999;">
+      <div style="background: #fff; padding: 24px; border-radius: 8px; max-width: 420px; width: 100%; position: relative; font-family: sans-serif;">
+        <span id="data-error-close" style="position: absolute; top: 12px; right: 16px; font-size: 22px; cursor: pointer;">&times;</span>
+        <h3 style="margin-top: 0;">Report a Data Error</h3>
+        <textarea id="data-error-message" placeholder="Describe the issue..." style="width: 100%; height: 120px; margin-top: 10px; padding: 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+        <button id="data-error-submit" style="margin-top: 12px; background-color: #0081E0; color: white; padding: 10px 16px; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">Submit</button>
+        <div id="data-error-success" style="display: none; color: green; margin-top: 10px;">Thank you! We'll review this shortly.</div>
+        <div id="data-error-error" style="display: none; color: red; margin-top: 10px;">Something went wrong. Please try again.</div>
       </div>
+    </div>
     `;
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 
@@ -398,17 +429,53 @@ document.addEventListener("DOMContentLoaded", () => {
       textarea.value = '';
       successMsg.style.display = 'none';
       errorMsg.style.display = 'none';
+      textarea.focus();
     });
 
     closeBtn.addEventListener('click', () => {
       modal.style.display = 'none';
     });
 
-    window.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.style.display = 'none';
-      }
+    window.addEventListener('click', e => {
+      if (e.target === modal) modal.style.display = 'none';
     });
 
-    submitBtn.addEventListener('click', async () => {
-     
+    submitBtn.addEventListener('click', () => {
+      const message = textarea.value.trim();
+      if (!message) {
+        alert('Please enter a message.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      successMsg.style.display = 'none';
+      errorMsg.style.display = 'none';
+
+      // Send data to your Zapier webhook (replace YOUR_WEBHOOK_URL)
+      fetch('https://hooks.zapier.com/hooks/catch/123456/abcdef/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+      })
+        .then(res => {
+          if (res.ok) {
+            successMsg.style.display = 'block';
+            errorMsg.style.display = 'none';
+            textarea.value = '';
+            setTimeout(() => {
+              modal.style.display = 'none';
+              successMsg.style.display = 'none';
+              submitBtn.disabled = false;
+            }, 3000);
+          } else {
+            throw new Error('Network response was not ok.');
+          }
+        })
+        .catch(() => {
+          errorMsg.style.display = 'block';
+          successMsg.style.display = 'none';
+          submitBtn.disabled = false;
+        });
+    });
+  }
+});
