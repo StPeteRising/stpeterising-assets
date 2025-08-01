@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // ==== Your original map code start ====
+
   const sheetURL = 'https://opensheet.elk.sh/1e7n0NgW7swUmn6hqCW2KslFgVd3RJhQRiuVSaIY3A1c/Sheet1';
   const mapboxToken = 'pk.eyJ1Ijoic3RwZXRlcmlzaW5nIiwiYSI6ImNtZDZxb2lweDBib2Mya3BzZ2xrdmgxMDEifQ.QWBg7S51ggQ_jemRmD7nRw';
 
@@ -20,7 +22,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Exclude Cancelled initially
   const activeStatuses = new Set(Object.keys(iconURLs).filter(status => status !== "Cancelled"));
   const statusLayers = {};
 
@@ -28,9 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
     center: [27.773, -82.64],
     zoom: 13,
     fullscreenControl: true,
-    fullscreenControlOptions: {
-      position: 'topright'
-    }
+    fullscreenControlOptions: { position: 'topright' }
   });
 
   L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`, {
@@ -50,7 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
     spiderfyOnMaxZoom: true,
   });
 
-  let projects = [];  // Will hold all project data with markers
+  let projects = [];
 
   fetch(sheetURL)
     .then(res => res.json())
@@ -62,9 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         let marker = null;
         if (!isNaN(lat) && !isNaN(lng)) {
-          marker = L.marker([lat, lng], {
-            icon: getCustomIcon(status)
-          });
+          marker = L.marker([lat, lng], { icon: getCustomIcon(status) });
 
           const popupHtml = `
             <div class="popup-content" style="min-width: 250px;">
@@ -82,14 +79,12 @@ document.addEventListener("DOMContentLoaded", () => {
               }
               <div><strong>Completion:</strong> ${project.Completion || ''}</div>
               ${project.Rendering ? `<img src="${project.Rendering}" alt="Rendering" style="max-width:100%; margin-top: 8px; cursor:pointer;" onclick="window.open('${project.Rendering}', '_blank')" />` : ''}
-              ${project.Slug ? `
-                <div style="margin-top: 8px;">
-                  <a href="https://stpeterising.com/${project.Slug}" target="_blank" style="color: #007BFF; font-weight: bold; text-decoration: underline;">
-                    View Project Page →
-                  </a>
-                </div>` : ''}
-            </div>
-          `;
+              ${project.Slug ? `<div style="margin-top: 8px;">
+                <a href="https://stpeterising.com/${project.Slug}" target="_blank" style="color: #007BFF; font-weight: bold; text-decoration: underline;">
+                View Project Page →
+                </a>
+              </div>` : ''}
+            </div>`;
 
           marker.bindPopup(popupHtml, { autoPan: false });
 
@@ -99,64 +94,44 @@ document.addEventListener("DOMContentLoaded", () => {
               const mapSize = map.getSize();
               const containerPoint = map.latLngToContainerPoint(popup.getLatLng());
               const popupElement = popup.getElement();
-
               if (!popupElement) return;
 
               const popupHeight = popupElement.offsetHeight;
               const popupWidth = popupElement.offsetWidth;
 
-              const paddingTop = 40;
-              const paddingBottom = 10;
-              const paddingLeft = 10;
-              const paddingRight = 10;
-              const verticalBuffer = 80;
+              const paddingTop = 40, paddingBottom = 10, paddingLeft = 10, paddingRight = 10, verticalBuffer = 80;
 
-              let offsetX = 0;
-              let offsetY = 0;
+              let offsetX = 0, offsetY = 0;
 
-              if (containerPoint.y - popupHeight < paddingTop + verticalBuffer) {
+              if (containerPoint.y - popupHeight < paddingTop + verticalBuffer)
                 offsetY = containerPoint.y - popupHeight - paddingTop - verticalBuffer;
-              }
-              if (containerPoint.y + paddingBottom > mapSize.y) {
+              if (containerPoint.y + paddingBottom > mapSize.y)
                 offsetY = containerPoint.y + paddingBottom - mapSize.y;
-              }
-              if (containerPoint.x - popupWidth / 2 < paddingLeft) {
+              if (containerPoint.x - popupWidth / 2 < paddingLeft)
                 offsetX = containerPoint.x - popupWidth / 2 - paddingLeft;
-              }
-              if (containerPoint.x + popupWidth / 2 > mapSize.x - paddingRight) {
+              if (containerPoint.x + popupWidth / 2 > mapSize.x - paddingRight)
                 offsetX = containerPoint.x + popupWidth / 2 - (mapSize.x - paddingRight);
-              }
 
-              if (offsetX !== 0 || offsetY !== 0) {
-                map.panBy([offsetX, offsetY], { animate: true });
-              }
+              if (offsetX !== 0 || offsetY !== 0) map.panBy([offsetX, offsetY], { animate: true });
             }, 50);
           });
 
-          // Add marker to status layer
           statusLayers[status].addLayer(marker);
 
-          // Only add marker to cluster group if status is active (checked)
           if (activeStatuses.has(status)) {
             markers.addLayer(marker);
           }
         }
 
-        return {
-          ...project,
-          marker,
-          lat,
-          lng,
-          status
-        };
+        return { ...project, marker, lat, lng, status };
       });
 
       map.addLayer(markers);
 
       createLegend(iconURLs, statusLayers, markers, activeStatuses);
       setupLegendToggle();
-
-      addSearchControl(); // Add search input and dropdown now that projects are loaded
+      addSearchControl();
+      addReportButtonAndModal(); // Add report button here, after map fully loads
     })
     .catch(err => {
       console.error("Error loading map data:", err);
@@ -178,9 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
       checkbox.style.marginRight = '8px';
       checkbox.id = `legend-checkbox-${status.replace(/\s+/g, '-')}`;
 
-      // Prevent map zoom on interactions with checkbox or label
-      const stopEvents = ['click', 'mousedown', 'mouseup', 'dblclick', 'touchstart', 'touchend'];
-      stopEvents.forEach(evt => {
+      ['click', 'mousedown', 'mouseup', 'dblclick', 'touchstart', 'touchend'].forEach(evt => {
         checkbox.addEventListener(evt, e => e.stopPropagation());
         item.addEventListener(evt, e => e.stopPropagation());
       });
@@ -229,7 +202,6 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleBtn.style.fontSize = '14px';
     toggleBtn.style.userSelect = 'none';
 
-    // Prevent toggle button clicks from closing popups or zooming map
     ['click', 'mousedown', 'mouseup', 'dblclick', 'touchstart', 'touchend'].forEach(evt => {
       toggleBtn.addEventListener(evt, e => e.stopPropagation());
     });
@@ -250,9 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
     container.insertBefore(toggleBtn, container.firstChild);
   }
 
-  // Add search input and dropdown to map controls
   function addSearchControl() {
-    // Create container div for control
     const searchControl = L.control({ position: 'topleft' });
 
     searchControl.onAdd = function () {
@@ -265,7 +235,6 @@ document.addEventListener("DOMContentLoaded", () => {
       container.style.fontFamily = 'Arial, sans-serif';
       container.style.position = 'relative';
 
-      // Create input
       const input = L.DomUtil.create('input', '', container);
       input.type = 'search';
       input.placeholder = 'Search by address or project name...';
@@ -275,7 +244,6 @@ document.addEventListener("DOMContentLoaded", () => {
       input.style.borderRadius = '4px';
       input.autocomplete = 'off';
 
-      // Create dropdown container
       const dropdown = L.DomUtil.create('ul', 'search-dropdown', container);
       dropdown.style.listStyle = 'none';
       dropdown.style.padding = '0';
@@ -290,11 +258,9 @@ document.addEventListener("DOMContentLoaded", () => {
       dropdown.style.zIndex = '1000';
       dropdown.style.display = 'none';
 
-      // Prevent map interactions when interacting with control
       L.DomEvent.disableClickPropagation(container);
       L.DomEvent.disableScrollPropagation(container);
 
-      // Listen for input changes
       input.addEventListener('input', () => {
         const query = input.value.trim().toLowerCase();
         dropdown.innerHTML = '';
@@ -303,7 +269,6 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        // Filter projects by name or address includes query
         const filtered = projects.filter(proj => {
           return (proj["Project Name"] && proj["Project Name"].toLowerCase().includes(query))
             || (proj.Address && proj.Address.toLowerCase().includes(query));
@@ -374,70 +339,76 @@ document.addEventListener("DOMContentLoaded", () => {
 
     searchControl.addTo(map);
   }
-});
 
-// Insert Report Data Error button below map container
-(function injectReportErrorButton() {
-  const mapContainer = document.querySelector('#project-map');
-  if (!mapContainer) return;
+  // ==== Add Report Button and Modal after map loads ====
+  function addReportButtonAndModal() {
+    const mapContainer = document.querySelector('#project-map');
+    if (!mapContainer) return;
 
-  const wrapper = document.createElement('div');
-  wrapper.style.marginTop = '24px';
+    // Create button wrapper
+    const wrapper = document.createElement('div');
+    wrapper.style.marginTop = '24px';
 
-  const reportBtn = document.createElement('button');
-  reportBtn.textContent = 'Report Data Error';
-  reportBtn.id = 'report-data-error-btn';
+    // Create report button
+    const reportBtn = document.createElement('button');
+    reportBtn.textContent = 'Report Data Error';
+    reportBtn.id = 'report-data-error-btn';
+    reportBtn.style.backgroundColor = '#0081E0';
+    reportBtn.style.color = '#fff';
+    reportBtn.style.border = 'none';
+    reportBtn.style.padding = '10px 18px';
+    reportBtn.style.fontSize = '1rem';
+    reportBtn.style.fontWeight = '600';
+    reportBtn.style.borderRadius = '6px';
+    reportBtn.style.cursor = 'pointer';
+    reportBtn.style.transition = 'background-color 0.3s ease';
+    reportBtn.onmouseenter = () => (reportBtn.style.backgroundColor = '#005f9e');
+    reportBtn.onmouseleave = () => (reportBtn.style.backgroundColor = '#0081E0');
 
-  // Styling the button
-  reportBtn.style.backgroundColor = '#0081E0';
-  reportBtn.style.color = '#fff';
-  reportBtn.style.border = 'none';
-  reportBtn.style.padding = '10px 18px';
-  reportBtn.style.fontSize = '1rem';
-  reportBtn.style.fontWeight = '600';
-  reportBtn.style.borderRadius = '6px';
-  reportBtn.style.cursor = 'pointer';
-  reportBtn.style.transition = 'background-color 0.3s ease';
-  reportBtn.onmouseenter = () => (reportBtn.style.backgroundColor = '#005f9e');
-  reportBtn.onmouseleave = () => (reportBtn.style.backgroundColor = '#0081E0');
+    wrapper.appendChild(reportBtn);
+    mapContainer.parentNode.insertBefore(wrapper, mapContainer.nextSibling);
 
-  wrapper.appendChild(reportBtn);
-  mapContainer.parentNode.insertBefore(wrapper, mapContainer.nextSibling);
-})();
+    // Inject modal HTML
+    const modalHTML = `
+      <div id="data-error-modal" style="display: none; position: fixed; top: 0; left: 0;
+        width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);
+        justify-content: center; align-items: center; z-index: 9999;">
+        <div style="background: #fff; padding: 24px; border-radius: 8px; max-width: 420px; width: 100%; position: relative; font-family: sans-serif;">
+          <span id="data-error-close" style="position: absolute; top: 12px; right: 16px; font-size: 22px; cursor: pointer;">&times;</span>
+          <h3 style="margin-top: 0;">Report a Data Error</h3>
+          <textarea id="data-error-message" placeholder="Describe the issue..." style="width: 100%; height: 120px; margin-top: 10px; padding: 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+          <button id="data-error-submit" style="margin-top: 12px; background-color: #0081E0; color: white; padding: 10px 16px; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">Submit</button>
+          <div id="data-error-success" style="display: none; color: green; margin-top: 10px;">Thank you! We'll review this shortly.</div>
+          <div id="data-error-error" style="display: none; color: red; margin-top: 10px;">Something went wrong. Please try again.</div>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-// Inject Modal HTML for reporting errors
-(function injectModalHTML() {
-  const modalHTML = `
-<div id="data-error-modal" style="display: none; position: fixed; top: 0; left: 0;
-  width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);
-  justify-content: center; align-items: center; z-index: 9999;">
-  <div style="background: #fff; padding: 24px; border-radius: 8px; max-width: 420px; width: 100%; position: relative; font-family: sans-serif;">
-    <span id="data-error-close" style="position: absolute; top: 12px; right: 16px; font-size: 22px; cursor: pointer;">&times;</span>
-    <h3 style="margin-top: 0;">Report a Data Error</h3>
-    <textarea id="data-error-message" placeholder="Describe the issue..." style="width: 100%; height: 120px; margin-top: 10px; padding: 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
-    <button id="data-error-submit" style="margin-top: 12px; background-color: #0081E0; color: white; padding: 10px 16px; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">Submit</button>
-    <div id="data-error-success" style="display: none; color: green; margin-top: 10px;">Thank you! We'll review this shortly.</div>
-    <div id="data-error-error" style="display: none; color: red; margin-top: 10px;">Something went wrong. Please try again.</div>
-  </div>
-</div>
-`;
-  document.body.insertAdjacentHTML('beforeend', modalHTML);
-})();
+    // Modal logic
+    const modal = document.getElementById('data-error-modal');
+    const closeBtn = document.getElementById('data-error-close');
+    const submitBtn = document.getElementById('data-error-submit');
+    const textarea = document.getElementById('data-error-message');
+    const successMsg = document.getElementById('data-error-success');
+    const errorMsg = document.getElementById('data-error-error');
 
-// Modal functionality: open, close, submit
-document.addEventListener('DOMContentLoaded', () => {
-  const openBtn = document.getElementById('report-data-error-btn');
-  const modal = document.getElementById('data-error-modal');
-  const closeBtn = document.getElementById('data-error-close');
-  const submitBtn = document.getElementById('data-error-submit');
-  const textarea = document.getElementById('data-error-message');
-  const successMsg = document.getElementById('data-error-success');
-  const errorMsg = document.getElementById('data-error-error');
+    reportBtn.addEventListener('click', () => {
+      modal.style.display = 'flex';
+      textarea.value = '';
+      successMsg.style.display = 'none';
+      errorMsg.style.display = 'none';
+    });
 
-  if (!openBtn || !modal || !closeBtn || !submitBtn) return;
+    closeBtn.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
 
-  openBtn.addEventListener('click', () => {
-    modal.style.display = 'flex';
-    textarea.value = '';
-    successMsg.style.display = 'none';
-    errorMsg
+    window.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+
+    submitBtn.addEventListener('click', async () => {
+     
