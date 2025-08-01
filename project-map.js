@@ -375,3 +375,69 @@ document.addEventListener("DOMContentLoaded", () => {
     searchControl.addTo(map);
   }
 });
+
+// Insert Report Data Error button below map container
+(function injectReportErrorButton() {
+  const mapContainer = document.querySelector('#project-map');
+  if (!mapContainer) return;
+
+  const wrapper = document.createElement('div');
+  wrapper.style.marginTop = '24px';
+
+  const reportBtn = document.createElement('button');
+  reportBtn.textContent = 'Report Data Error';
+  reportBtn.id = 'report-data-error-btn';
+
+  // Styling the button
+  reportBtn.style.backgroundColor = '#0081E0';
+  reportBtn.style.color = '#fff';
+  reportBtn.style.border = 'none';
+  reportBtn.style.padding = '10px 18px';
+  reportBtn.style.fontSize = '1rem';
+  reportBtn.style.fontWeight = '600';
+  reportBtn.style.borderRadius = '6px';
+  reportBtn.style.cursor = 'pointer';
+  reportBtn.style.transition = 'background-color 0.3s ease';
+  reportBtn.onmouseenter = () => (reportBtn.style.backgroundColor = '#005f9e');
+  reportBtn.onmouseleave = () => (reportBtn.style.backgroundColor = '#0081E0');
+
+  wrapper.appendChild(reportBtn);
+  mapContainer.parentNode.insertBefore(wrapper, mapContainer.nextSibling);
+})();
+
+// Inject Modal HTML for reporting errors
+(function injectModalHTML() {
+  const modalHTML = `
+<div id="data-error-modal" style="display: none; position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);
+  justify-content: center; align-items: center; z-index: 9999;">
+  <div style="background: #fff; padding: 24px; border-radius: 8px; max-width: 420px; width: 100%; position: relative; font-family: sans-serif;">
+    <span id="data-error-close" style="position: absolute; top: 12px; right: 16px; font-size: 22px; cursor: pointer;">&times;</span>
+    <h3 style="margin-top: 0;">Report a Data Error</h3>
+    <textarea id="data-error-message" placeholder="Describe the issue..." style="width: 100%; height: 120px; margin-top: 10px; padding: 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+    <button id="data-error-submit" style="margin-top: 12px; background-color: #0081E0; color: white; padding: 10px 16px; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">Submit</button>
+    <div id="data-error-success" style="display: none; color: green; margin-top: 10px;">Thank you! We'll review this shortly.</div>
+    <div id="data-error-error" style="display: none; color: red; margin-top: 10px;">Something went wrong. Please try again.</div>
+  </div>
+</div>
+`;
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+})();
+
+// Modal functionality: open, close, submit
+document.addEventListener('DOMContentLoaded', () => {
+  const openBtn = document.getElementById('report-data-error-btn');
+  const modal = document.getElementById('data-error-modal');
+  const closeBtn = document.getElementById('data-error-close');
+  const submitBtn = document.getElementById('data-error-submit');
+  const textarea = document.getElementById('data-error-message');
+  const successMsg = document.getElementById('data-error-success');
+  const errorMsg = document.getElementById('data-error-error');
+
+  if (!openBtn || !modal || !closeBtn || !submitBtn) return;
+
+  openBtn.addEventListener('click', () => {
+    modal.style.display = 'flex';
+    textarea.value = '';
+    successMsg.style.display = 'none';
+    errorMsg
