@@ -24,17 +24,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const activeStatuses = new Set(Object.keys(iconURLs).filter(status => status !== "Cancelled"));
   const statusLayers = {};
 
-  const mapContainer = document.getElementById('project-map');
-  if (!mapContainer) {
-    console.error("Map container #project-map not found");
-    return;
-  }
-
   const map = L.map('project-map', {
     center: [27.773, -82.64],
     zoom: 13,
     fullscreenControl: true,
-    fullscreenControlOptions: { position: 'topright' }
+    fullscreenControlOptions: {
+      position: 'topright'
+    }
   });
 
   L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`, {
@@ -54,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
     spiderfyOnMaxZoom: true,
   });
 
-  let projects = [];  // Hold projects with markers
+  let projects = [];  // Will hold all project data with markers
 
   fetch(sheetURL)
     .then(res => res.json())
@@ -137,10 +133,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 50);
           });
 
-          // Add to status layer
+          // Add marker to status layer
           statusLayers[status].addLayer(marker);
 
-          // Add to marker cluster if status active
+          // Only add marker to cluster group if status is active (checked)
           if (activeStatuses.has(status)) {
             markers.addLayer(marker);
           }
@@ -159,8 +155,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       createLegend(iconURLs, statusLayers, markers, activeStatuses);
       setupLegendToggle();
-      addSearchControl();
-      insertReportButtonAndModal();
+
+      addSearchControl(); // Add search input and dropdown now that projects are loaded
     })
     .catch(err => {
       console.error("Error loading map data:", err);
@@ -182,8 +178,9 @@ document.addEventListener("DOMContentLoaded", () => {
       checkbox.style.marginRight = '8px';
       checkbox.id = `legend-checkbox-${status.replace(/\s+/g, '-')}`;
 
-      // Prevent map zoom on checkbox/label interactions
-      ['click', 'mousedown', 'mouseup', 'dblclick', 'touchstart', 'touchend'].forEach(evt => {
+      // Prevent map zoom on interactions with checkbox or label
+      const stopEvents = ['click', 'mousedown', 'mouseup', 'dblclick', 'touchstart', 'touchend'];
+      stopEvents.forEach(evt => {
         checkbox.addEventListener(evt, e => e.stopPropagation());
         item.addEventListener(evt, e => e.stopPropagation());
       });
@@ -232,6 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleBtn.style.fontSize = '14px';
     toggleBtn.style.userSelect = 'none';
 
+    // Prevent toggle button clicks from closing popups or zooming map
     ['click', 'mousedown', 'mouseup', 'dblclick', 'touchstart', 'touchend'].forEach(evt => {
       toggleBtn.addEventListener(evt, e => e.stopPropagation());
     });
@@ -252,8 +250,9 @@ document.addEventListener("DOMContentLoaded", () => {
     container.insertBefore(toggleBtn, container.firstChild);
   }
 
-  // Add search input/dropdown control
+  // Add search input and dropdown to map controls
   function addSearchControl() {
+    // Create container div for control
     const searchControl = L.control({ position: 'topleft' });
 
     searchControl.onAdd = function () {
@@ -266,6 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
       container.style.fontFamily = 'Arial, sans-serif';
       container.style.position = 'relative';
 
+      // Create input
       const input = L.DomUtil.create('input', '', container);
       input.type = 'search';
       input.placeholder = 'Search by address or project name...';
@@ -275,6 +275,7 @@ document.addEventListener("DOMContentLoaded", () => {
       input.style.borderRadius = '4px';
       input.autocomplete = 'off';
 
+      // Create dropdown container
       const dropdown = L.DomUtil.create('ul', 'search-dropdown', container);
       dropdown.style.listStyle = 'none';
       dropdown.style.padding = '0';
@@ -289,9 +290,11 @@ document.addEventListener("DOMContentLoaded", () => {
       dropdown.style.zIndex = '1000';
       dropdown.style.display = 'none';
 
+      // Prevent map interactions when interacting with control
       L.DomEvent.disableClickPropagation(container);
       L.DomEvent.disableScrollPropagation(container);
 
+      // Listen for input changes
       input.addEventListener('input', () => {
         const query = input.value.trim().toLowerCase();
         dropdown.innerHTML = '';
@@ -300,6 +303,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
+        // Filter projects by name or address includes query
         const filtered = projects.filter(proj => {
           return (proj["Project Name"] && proj["Project Name"].toLowerCase().includes(query))
             || (proj.Address && proj.Address.toLowerCase().includes(query));
@@ -310,7 +314,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        filtered.forEach(proj => {
+        filtered.forEach((proj) => {
           if (!proj.marker) return;
 
           const li = document.createElement('li');
@@ -371,111 +375,108 @@ document.addEventListener("DOMContentLoaded", () => {
     searchControl.addTo(map);
   }
 
-  // Insert Report Button and Modal HTML, setup event handlers
-  function insertReportButtonAndModal() {
-    const mapContainer = document.getElementById('project-map');
-    if (!mapContainer) return;
+  // === Report Data Error link and modal injection ===
 
-    // Create button wrapper
+  // Insert "Report Data Error" link below the map container
+  const mapContainer = document.querySelector('#project-map');
+  if (mapContainer) {
     const wrapper = document.createElement('div');
-    wrapper.style.marginTop = '24px';
+    wrapper.style.marginTop = '16px';
+    wrapper.style.textAlign = 'center';
 
-    const reportBtn = document.createElement('button');
-    reportBtn.textContent = 'Report Data Error';
-    reportBtn.id = 'report-data-error-btn';
-    reportBtn.style.margin = '0 0 0 0';
-    reportBtn.style.backgroundColor = '#0081E0';
-    reportBtn.style.color = '#fff';
-    reportBtn.style.border = 'none';
-    reportBtn.style.padding = '10px 18px';
-    reportBtn.style.fontSize = '1rem';
-    reportBtn.style.fontWeight = '600';
-    reportBtn.style.borderRadius = '6px';
-    reportBtn.style.cursor = 'pointer';
-    reportBtn.style.transition = 'background-color 0.3s ease';
-    reportBtn.onmouseenter = () => (reportBtn.style.backgroundColor = '#005f9e');
-    reportBtn.onmouseleave = () => (reportBtn.style.backgroundColor = '#0081E0');
+    const reportLink = document.createElement('a');
+    reportLink.href = '#';
+    reportLink.id = 'report-data-error-link';
+    reportLink.textContent = 'Report Data Error';
+    reportLink.style.color = '#0081E0';
+    reportLink.style.fontWeight = '600';
+    reportLink.style.textDecoration = 'underline';
+    reportLink.style.cursor = 'pointer';
+    reportLink.style.fontSize = '1rem';
 
-    wrapper.appendChild(reportBtn);
+    // Hover effect
+    reportLink.addEventListener('mouseenter', () => {
+      reportLink.style.color = '#005f9e';
+    });
+    reportLink.addEventListener('mouseleave', () => {
+      reportLink.style.color = '#0081E0';
+    });
+
+    wrapper.appendChild(reportLink);
     mapContainer.parentNode.insertBefore(wrapper, mapContainer.nextSibling);
-
-    // Modal HTML
-    const modalHTML = `
-    <div id="data-error-modal" style="display: none; position: fixed; top: 0; left: 0;
-      width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);
-      justify-content: center; align-items: center; z-index: 9999;">
-      <div style="background: #fff; padding: 24px; border-radius: 8px; max-width: 420px; width: 100%; position: relative; font-family: sans-serif;">
-        <span id="data-error-close" style="position: absolute; top: 12px; right: 16px; font-size: 22px; cursor: pointer;">&times;</span>
-        <h3 style="margin-top: 0;">Report a Data Error</h3>
-        <textarea id="data-error-message" placeholder="Describe the issue..." style="width: 100%; height: 120px; margin-top: 10px; padding: 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
-        <button id="data-error-submit" style="margin-top: 12px; background-color: #0081E0; color: white; padding: 10px 16px; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;">Submit</button>
-        <div id="data-error-success" style="display: none; color: green; margin-top: 10px;">Thank you! We'll review this shortly.</div>
-        <div id="data-error-error" style="display: none; color: red; margin-top: 10px;">Something went wrong. Please try again.</div>
-      </div>
-    </div>
-    `;
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-
-    // Modal logic
-    const modal = document.getElementById('data-error-modal');
-    const closeBtn = document.getElementById('data-error-close');
-    const submitBtn = document.getElementById('data-error-submit');
-    const textarea = document.getElementById('data-error-message');
-    const successMsg = document.getElementById('data-error-success');
-    const errorMsg = document.getElementById('data-error-error');
-
-    reportBtn.addEventListener('click', () => {
-      modal.style.display = 'flex';
-      textarea.value = '';
-      successMsg.style.display = 'none';
-      errorMsg.style.display = 'none';
-      textarea.focus();
-    });
-
-    closeBtn.addEventListener('click', () => {
-      modal.style.display = 'none';
-    });
-
-    window.addEventListener('click', e => {
-      if (e.target === modal) modal.style.display = 'none';
-    });
-
-    submitBtn.addEventListener('click', () => {
-      const message = textarea.value.trim();
-      if (!message) {
-        alert('Please enter a message.');
-        return;
-      }
-
-      submitBtn.disabled = true;
-      successMsg.style.display = 'none';
-      errorMsg.style.display = 'none';
-
-      // Send data to your Zapier webhook (replace YOUR_WEBHOOK_URL)
-      fetch('https://hooks.zapier.com/hooks/catch/123456/abcdef/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message })
-      })
-        .then(res => {
-          if (res.ok) {
-            successMsg.style.display = 'block';
-            errorMsg.style.display = 'none';
-            textarea.value = '';
-            setTimeout(() => {
-              modal.style.display = 'none';
-              successMsg.style.display = 'none';
-              submitBtn.disabled = false;
-            }, 3000);
-          } else {
-            throw new Error('Network response was not ok.');
-          }
-        })
-        .catch(() => {
-          errorMsg.style.display = 'block';
-          successMsg.style.display = 'none';
-          submitBtn.disabled = false;
-        });
-    });
   }
+
+  // Inject modal HTML with styling matching your project page popup
+  const modalHTML = `
+  <div id="data-error-modal" style="display: none; position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center; align-items: center; z-index: 9999;">
+    <div style="background: #fff; padding: 24px 28px; border-radius: 12px; max-width: 440px; width: 90%; position: relative; font-family: 'Inter', Arial, sans-serif; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+      <button id="data-error-close" aria-label="Close modal" style="position: absolute; top: 14px; right: 18px; background: none; border: none; font-size: 28px; cursor: pointer; color: #999;">&times;</button>
+      <h3 style="margin-top: 0; font-weight: 600; font-size: 1.5rem; color: #111;">Report a Data Error</h3>
+      <textarea id="data-error-message" placeholder="Describe the issue..." style="width: 100%; height: 130px; margin-top: 14px; padding: 10px 12px; font-size: 15px; border: 1.5px solid #ddd; border-radius: 8px; resize: vertical; font-family: 'Inter', Arial, sans-serif;"></textarea>
+      <button id="data-error-submit" style="margin-top: 18px; background-color: #0081E0; color: white; padding: 12px 20px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; transition: background-color 0.3s ease;">Submit</button>
+      <div id="data-error-success" style="display: none; color: #138000; margin-top: 14px; font-weight: 600;">Thank you! We'll review this shortly.</div>
+      <div id="data-error-error" style="display: none; color: #D32F2F; margin-top: 14px; font-weight: 600;">Something went wrong. Please try again.</div>
+    </div>
+  </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+  // Modal logic: open, close, submit
+  const openLink = document.getElementById('report-data-error-link');
+  const modal = document.getElementById('data-error-modal');
+  const closeBtn = document.getElementById('data-error-close');
+  const submitBtn = document.getElementById('data-error-submit');
+  const messageField = document.getElementById('data-error-message');
+  const successMsg = document.getElementById('data-error-success');
+  const errorMsg = document.getElementById('data-error-error');
+
+  openLink?.addEventListener('click', (e) => {
+    e.preventDefault();
+    successMsg.style.display = 'none';
+    errorMsg.style.display = 'none';
+    messageField.value = '';
+    modal.style.display = 'flex';
+    messageField.focus();
+  });
+
+  closeBtn?.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.style.display = 'none';
+    }
+  });
+
+  submitBtn?.addEventListener('click', () => {
+    const msg = messageField.value.trim();
+    if (!msg) {
+      alert('Please enter a description of the error.');
+      return;
+    }
+
+    // TODO: Replace with your actual submission endpoint
+    // For now, simulate submission with a timeout
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
+    setTimeout(() => {
+      // Simulate success
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit';
+      successMsg.style.display = 'block';
+      errorMsg.style.display = 'none';
+      messageField.value = '';
+
+      // Auto-close modal after 2.5 seconds
+      setTimeout(() => {
+        modal.style.display = 'none';
+      }, 2500);
+    }, 1500);
+
+    // If you have a real endpoint, use fetch or XMLHttpRequest here.
+  });
 });
