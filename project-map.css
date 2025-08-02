@@ -44,7 +44,7 @@
 }
 
 /* Toggle button styling */
-#legend-toggle-btn {
+.legend-toggle {
   margin-bottom: 4px;
   padding: 6px 10px;
   border: 1px solid #ccc;
@@ -59,7 +59,7 @@
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-#legend-toggle-btn:hover {
+.legend-toggle:hover {
   background-color: #f4f4f4;
   border-color: #999;
 }
