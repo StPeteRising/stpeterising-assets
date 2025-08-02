@@ -225,15 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleBtn.textContent = 'Hide Legend';
     toggleBtn.type = 'button';
 
-    toggleBtn.style.margin = '0 0 4px 0';
-    toggleBtn.style.padding = '4px 12px';
-    toggleBtn.style.border = 'none';
-    toggleBtn.style.backgroundColor = '#007BFF';
-    toggleBtn.style.color = 'white';
-    toggleBtn.style.borderRadius = '6px';
-    toggleBtn.style.cursor = 'pointer';
-    toggleBtn.style.fontSize = '14px';
-    toggleBtn.style.userSelect = 'none';
+    toggleBtn.className = 'legend-toggle';
 
     ['click', 'mousedown', 'mouseup', 'dblclick', 'touchstart', 'touchend'].forEach(evt => {
       toggleBtn.addEventListener(evt, e => e.stopPropagation());
