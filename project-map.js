@@ -394,7 +394,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     fetch(submitURL, {
       method: "POST",
-      mode: "no-cors",
       headers: {
         "Content-Type": "application/json",
       },
