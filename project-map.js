@@ -361,4 +361,58 @@ document.addEventListener("DOMContentLoaded", () => {
 
     searchControl.addTo(map);
   }
+
+    // Error reporting modal logic
+  const errorModal = document.getElementById("error-modal");
+  const reportLink = document.getElementById("report-error-link");
+  const closeModal = document.getElementById("close-modal");
+  const submitButton = document.getElementById("submit-error");
+  const successMessage = document.getElementById("success-message");
+  const textarea = document.getElementById("error-message");
+
+  const submitURL = 'https://script.google.com/macros/s/AKfycbwu3EaIFnqf0Idj3CyieOpjw0xtfCcdfs5_GuD2FMH7-VwvXtATO0YUrhCk0VS7mvE/exec';
+
+  reportLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    errorModal.style.display = "flex";
+  });
+
+  closeModal.addEventListener("click", () => {
+    errorModal.style.display = "none";
+    textarea.value = "";
+    successMessage.style.display = "none";
+    submitButton.disabled = false;
+    submitButton.textContent = "Submit";
+  });
+
+  submitButton.addEventListener("click", () => {
+    const message = textarea.value.trim();
+    if (!message) return;
+
+    submitButton.disabled = true;
+    submitButton.textContent = "Sending...";
+
+    fetch(submitURL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        pageUrl: window.location.href,
+        message: message,
+      }),
+    })
+    .then(() => {
+      successMessage.style.display = "block";
+      submitButton.disabled = false;
+      submitButton.textContent = "Submit";
+      textarea.value = "";
+    })
+    .catch(() => {
+      submitButton.disabled = false;
+      submitButton.textContent = "Submit";
+      alert("There was an error submitting the form.");
+    });
+  });
 });
