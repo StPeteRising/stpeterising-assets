@@ -23,7 +23,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const activeStatuses = new Set(Object.keys(iconURLs).filter(status => status !== "Cancelled"));
   const statusLayers = {};
 
-  // Define base layers
   const outdoorsBase = L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`, {
     tileSize: 512,
     zoomOffset: -1,
@@ -362,7 +361,9 @@ document.addEventListener("DOMContentLoaded", () => {
     searchControl.addTo(map);
   }
 
-    // Error reporting modal logic
+  // Error reporting modal logic
+  // Elements IDs you must have in your HTML:
+  // error-modal, report-error-link, close-modal, submit-error, success-message, error-message
   const errorModal = document.getElementById("error-modal");
   const reportLink = document.getElementById("report-error-link");
   const closeModal = document.getElementById("close-modal");
@@ -392,15 +393,14 @@ document.addEventListener("DOMContentLoaded", () => {
     submitButton.disabled = true;
     submitButton.textContent = "Sending...";
 
+    // Here is the key Bonus fix — send URL-encoded form data, not JSON
+    const data = new URLSearchParams();
+    data.append("pageUrl", window.location.href);
+    data.append("message", message);
+
     fetch(submitURL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        pageUrl: window.location.href,
-        message: message,
-      }),
+      body: data,  // Automatically sent as application/x-www-form-urlencoded
     })
     .then(() => {
       successMessage.style.display = "block";
