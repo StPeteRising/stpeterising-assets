@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   const sheetURL = 'https://opensheet.elk.sh/1e7n0NgW7swUmn6hqCW2KslFgVd3RJhQRiuVSaIY3A1c/Sheet1';
   const mapboxToken = 'pk.eyJ1Ijoic3RwZXRlcmlzaW5nIiwiYSI6ImNtZDZxb2lweDBib2Mya3BzZ2xrdmgxMDEifQ.QWBg7S51ggQ_jemRmD7nRw';
-  const scriptURL = 'https://script.google.com/macros/s/AKfycbwu3EaIFnqf0Idj3CyieOpjw0xtfCcdfs5_GuD2FMH7-VwvXtATO0YUrhCk0VS7mvE/exec';
 
   const iconURLs = {
     "Proposed": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/refs/heads/main/icons/Proposed.png",
@@ -166,8 +165,8 @@ document.addEventListener("DOMContentLoaded", () => {
       createLegend(iconURLs, statusLayers, markers, activeStatuses);
       setupLegendToggle();
       addSearchControl();
-      injectErrorReportingUI();  // Inject Report Data Error UI
-      setupErrorReportingEvents(); // Setup modal event handlers
+      injectErrorReportingUI();
+      setupErrorReportingEvents();
     })
     .catch(err => {
       console.error("Error loading map data:", err);
@@ -366,25 +365,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Inject the new styled Report a Data Error link and modal HTML
   function injectErrorReportingUI() {
-    // Insert the link below the map container
     const mapContainer = document.getElementById('project-map');
     if (!mapContainer) return;
 
-    // Create container div for the link
     const linkContainer = document.createElement('div');
     linkContainer.style.marginTop = '8px';
     linkContainer.style.marginBottom = '12px';
     linkContainer.style.fontSize = '14px';
 
-    // Inner flex div with the link (left aligned)
     const flexDiv = document.createElement('div');
     flexDiv.style.display = 'flex';
-    flexDiv.style.justifyContent = 'flex-start'; // left align link only
+    flexDiv.style.justifyContent = 'flex-start';
     flexDiv.style.alignItems = 'center';
 
     const reportLink = document.createElement('a');
     reportLink.href = '#';
-    reportLink.id = 'report-error-link'; // keep existing ID
+    reportLink.id = 'report-error-link';
     reportLink.style.color = '#666';
     reportLink.style.textDecoration = 'underline';
     reportLink.textContent = 'Report a data error';
@@ -392,47 +388,36 @@ document.addEventListener("DOMContentLoaded", () => {
     flexDiv.appendChild(reportLink);
     linkContainer.appendChild(flexDiv);
 
-    // Insert after map container
     mapContainer.insertAdjacentElement('afterend', linkContainer);
 
-    // Create modal HTML
     const modalDiv = document.createElement('div');
-    modalDiv.id = 'data-error-modal'; // updated to match CSS
+    modalDiv.id = 'data-error-modal';
     modalDiv.style.display = 'none';
 
-    // Inner modal content container
     const modalContent = document.createElement('div');
 
-    // The modal content div will be styled by CSS with #data-error-modal > div selector
-    // So we just append elements inside here
-
-    // Close button (×)
     const closeBtn = document.createElement('span');
     closeBtn.id = 'data-error-close';
     closeBtn.textContent = '×';
 
     modalContent.appendChild(closeBtn);
 
-    // Heading
     const heading = document.createElement('h3');
     heading.textContent = 'Report a Data Error';
     modalContent.appendChild(heading);
 
-    // Textarea
     const textarea = document.createElement('textarea');
     textarea.id = 'data-error-message';
     textarea.placeholder = 'Describe the data issue...';
 
     modalContent.appendChild(textarea);
 
-    // Submit button
     const submitBtn = document.createElement('button');
     submitBtn.id = 'data-error-submit';
     submitBtn.textContent = 'Submit';
 
     modalContent.appendChild(submitBtn);
 
-    // Success message div
     const successMsg = document.createElement('div');
     successMsg.id = 'data-error-success';
     successMsg.textContent = 'Thank you! Your report was sent.';
@@ -440,7 +425,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     modalContent.appendChild(successMsg);
 
-    // Error message div (for submission errors)
     const errorMsg = document.createElement('div');
     errorMsg.id = 'data-error-error';
     errorMsg.textContent = 'Oops! Something went wrong. Please try again.';
@@ -465,22 +449,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!reportLink || !modal || !closeBtn || !submitBtn || !textarea || !successMsg || !errorMsg) return;
 
-    // Prevent link from jumping to top of page
     reportLink.addEventListener('click', (e) => {
       e.preventDefault();
-      // Hide any messages
       successMsg.style.display = 'none';
       errorMsg.style.display = 'none';
       textarea.value = '';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit';
       modal.style.display = 'flex';
-      textarea.focus();
     });
 
     closeBtn.addEventListener('click', () => {
       modal.style.display = 'none';
     });
 
-    window.addEventListener('click', (e) => {
+    modal.addEventListener('click', (e) => {
       if (e.target === modal) {
         modal.style.display = 'none';
       }
@@ -497,34 +480,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
       submitBtn.disabled = true;
       submitBtn.textContent = 'Sending...';
-
       errorMsg.style.display = 'none';
       successMsg.style.display = 'none';
 
-      const data = {
-        timestamp: new Date().toISOString(),
-        message: message,
-        pageUrl: window.location.href,
-        userAgent: navigator.userAgent,
-      };
+      const scriptURL = 'https://script.google.com/macros/s/AKfycbwu3EaIFnqf0Idj3CyieOpjw0xtfCcdfs5_GuD2FMH7-VwvXtATO0YUrhCk0VS7mvE/exec';
+
+      // Send URL-encoded form data
+      const formData = new URLSearchParams();
+      formData.append('message', message);
+      formData.append('pageUrl', window.location.href);
 
       fetch(scriptURL, {
         method: 'POST',
-        body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        },
+        body: formData.toString()
       })
-        .then(response => {
-          if (!response.ok) throw new Error('Network response was not ok');
-          return response.text();
-        })
-        .then(() => {
-          successMsg.style.display = 'block';
-          textarea.value = '';
+        .then(response => response.json())
+        .then(data => {
+          if (data.result === 'success') {
+            successMsg.style.display = 'block';
+            textarea.value = '';
+          } else {
+            errorMsg.textContent = data.error || 'Oops! Something went wrong. Please try again.';
+            errorMsg.style.display = 'block';
+          }
         })
         .catch(() => {
           errorMsg.textContent = 'Oops! Something went wrong. Please try again.';
           errorMsg.style.display = 'block';
-          successMsg.style.display = 'none';
         })
         .finally(() => {
           submitBtn.disabled = false;
