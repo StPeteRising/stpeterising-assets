@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const sheetURL = 'https://opensheet.elk.sh/1e7n0NgW7swUmn6hqCW2KslFgVd3RJhQRiuVSaIY3A1c/Sheet1';
   const mapboxToken = 'pk.eyJ1Ijoic3RwZXRlcmlzaW5nIiwiYSI6ImNtZDZxb2lweDBib2Mya3BzZ2xrdmgxMDEifQ.QWBg7S51ggQ_jemRmD7nRw';
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbwu3EaIFnqf0Idj3CyieOpjw0xtfCcdfs5_GuD2FMH7-VwvXtATO0YUrhCk0VS7mvE/exec';
 
   const iconURLs = {
     "Proposed": "https://raw.githubusercontent.com/StPeteRising/stpeterising-assets/refs/heads/main/icons/Proposed.png",
@@ -165,8 +166,8 @@ document.addEventListener("DOMContentLoaded", () => {
       createLegend(iconURLs, statusLayers, markers, activeStatuses);
       setupLegendToggle();
       addSearchControl();
-      injectErrorReportingUI();  // <-- Inject our new styled error reporting UI here
-      setupErrorReportingEvents(); // <-- Set up modal event listeners
+      injectErrorReportingUI();  // Inject Report Data Error UI
+      setupErrorReportingEvents(); // Setup modal event handlers
     })
     .catch(err => {
       console.error("Error loading map data:", err);
@@ -471,17 +472,15 @@ document.addEventListener("DOMContentLoaded", () => {
       successMsg.style.display = 'none';
       errorMsg.style.display = 'none';
       textarea.value = '';
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Submit';
       modal.style.display = 'flex';
+      textarea.focus();
     });
 
     closeBtn.addEventListener('click', () => {
       modal.style.display = 'none';
     });
 
-    // Close modal if click outside modal content
-    modal.addEventListener('click', (e) => {
+    window.addEventListener('click', (e) => {
       if (e.target === modal) {
         modal.style.display = 'none';
       }
@@ -496,25 +495,41 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // Disable button and show sending state
       submitBtn.disabled = true;
       submitBtn.textContent = 'Sending...';
 
-      // Hide messages while sending
       errorMsg.style.display = 'none';
       successMsg.style.display = 'none';
 
-      // Simulate sending delay (replace with actual sending logic)
-      setTimeout(() => {
-        // Simulate success response
+      const data = {
+        timestamp: new Date().toISOString(),
+        message: message,
+        pageUrl: window.location.href,
+        userAgent: navigator.userAgent,
+      };
 
-        successMsg.style.display = 'block';
-        textarea.value = '';
-
-        // Re-enable button and reset text
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit';
-      }, 800);
+      fetch(scriptURL, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' },
+      })
+        .then(response => {
+          if (!response.ok) throw new Error('Network response was not ok');
+          return response.text();
+        })
+        .then(() => {
+          successMsg.style.display = 'block';
+          textarea.value = '';
+        })
+        .catch(() => {
+          errorMsg.textContent = 'Oops! Something went wrong. Please try again.';
+          errorMsg.style.display = 'block';
+          successMsg.style.display = 'none';
+        })
+        .finally(() => {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit';
+        });
     });
   }
 });
