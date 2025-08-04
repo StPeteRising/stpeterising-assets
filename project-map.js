@@ -165,6 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
       createLegend(iconURLs, statusLayers, markers, activeStatuses);
       setupLegendToggle();
       addSearchControl();
+      injectErrorReportingUI();  // <-- Inject our new styled error reporting UI here
     })
     .catch(err => {
       console.error("Error loading map data:", err);
@@ -361,57 +362,132 @@ document.addEventListener("DOMContentLoaded", () => {
     searchControl.addTo(map);
   }
 
-  // Error reporting modal logic
-  // Elements IDs you must have in your HTML:
-  // error-modal, report-error-link, close-modal, submit-error, success-message, error-message
-  const errorModal = document.getElementById("error-modal");
-  const reportLink = document.getElementById("report-error-link");
-  const closeModal = document.getElementById("close-modal");
-  const submitButton = document.getElementById("submit-error");
-  const successMessage = document.getElementById("success-message");
-  const textarea = document.getElementById("error-message");
+  // Inject the new styled Report a Data Error link and modal HTML
+  function injectErrorReportingUI() {
+    // Insert the link below the map container
+    const mapContainer = document.getElementById('project-map');
+    if (!mapContainer) return;
 
-  const submitURL = 'https://script.google.com/macros/s/AKfycbwu3EaIFnqf0Idj3CyieOpjw0xtfCcdfs5_GuD2FMH7-VwvXtATO0YUrhCk0VS7mvE/exec';
+    // Create container div for the link
+    const linkContainer = document.createElement('div');
+    linkContainer.style.marginTop = '8px';
+    linkContainer.style.marginBottom = '12px';
+    linkContainer.style.fontSize = '14px';
 
-  reportLink.addEventListener("click", (e) => {
-    e.preventDefault();
-    errorModal.style.display = "flex";
-  });
+    // Inner flex div with the link (no last updated text for now, but you can add dynamically)
+    const flexDiv = document.createElement('div');
+    flexDiv.style.display = 'flex';
+    flexDiv.style.justifyContent = 'flex-start'; // left align link only
+    flexDiv.style.alignItems = 'center';
 
-  closeModal.addEventListener("click", () => {
-    errorModal.style.display = "none";
-    textarea.value = "";
-    successMessage.style.display = "none";
-    submitButton.disabled = false;
-    submitButton.textContent = "Submit";
-  });
+    const reportLink = document.createElement('a');
+    reportLink.href = '#';
+    reportLink.id = 'report-error-link'; // keep existing ID
+    reportLink.style.color = '#666';
+    reportLink.style.textDecoration = 'underline';
+    reportLink.textContent = 'Report a data error';
 
-  submitButton.addEventListener("click", () => {
-    const message = textarea.value.trim();
-    if (!message) return;
+    flexDiv.appendChild(reportLink);
+    linkContainer.appendChild(flexDiv);
 
-    submitButton.disabled = true;
-    submitButton.textContent = "Sending...";
+    // Insert after map container
+    mapContainer.insertAdjacentElement('afterend', linkContainer);
 
-    // Here is the key Bonus fix — send URL-encoded form data, not JSON
-    const data = new URLSearchParams();
-    data.append("pageUrl", window.location.href);
-    data.append("message", message);
+    // Create modal HTML
+    const modalDiv = document.createElement('div');
+    modalDiv.id = 'error-modal'; // keep existing ID
+    modalDiv.style.display = 'none';
+    modalDiv.style.position = 'fixed';
+    modalDiv.style.zIndex = '9999';
+    modalDiv.style.left = '0';
+    modalDiv.style.top = '0';
+    modalDiv.style.width = '100%';
+    modalDiv.style.height = '100%';
+    modalDiv.style.background = 'rgba(0,0,0,0.5)';
+    modalDiv.style.justifyContent = 'center';
+    modalDiv.style.alignItems = 'center';
+    modalDiv.style.display = 'none';
+    modalDiv.style.flexDirection = 'column';
+    modalDiv.style.cursor = 'default';
+    modalDiv.style.display = 'none';
+    modalDiv.style.cssText += 'display: none;'; // to be safe
 
-    fetch(submitURL, {
-      method: "POST",
-      body: data,  // Automatically sent as application/x-www-form-urlencoded
-    })
-    .then(() => {
-      successMessage.style.display = "block";
-      submitButton.disabled = false;
-      submitButton.textContent = "Submit";
-      textarea.value = "";
-    })
-    .catch(() => {
-      submitButton.disabled = false;
-      submitButton.textContent = "Submit";
-      alert("There was an error submitting the form.");
-    });
-  });
+    // Inner modal content container
+    const modalContent = document.createElement('div');
+    modalContent.style.background = '#fff';
+    modalContent.style.padding = '20px';
+    modalContent.style.borderRadius = '6px';
+    modalContent.style.width = '90%';
+    modalContent.style.maxWidth = '400px';
+    modalContent.style.boxShadow = '0 0 15px rgba(0,0,0,0.3)';
+    modalContent.style.position = 'relative';
+    modalContent.style.fontFamily = 'Arial, sans-serif';
+
+    // Close button (×)
+    const closeBtn = document.createElement('span');
+    closeBtn.id = 'close-modal'; // keep existing ID
+    closeBtn.style.position = 'absolute';
+    closeBtn.style.top = '8px';
+    closeBtn.style.right = '12px';
+    closeBtn.style.fontWeight = 'bold';
+    closeBtn.style.fontSize = '24px';
+    closeBtn.style.cursor = 'pointer';
+    closeBtn.textContent = '×';
+
+    modalContent.appendChild(closeBtn);
+
+    // Heading
+    const heading = document.createElement('h3');
+    heading.textContent = 'Report a Data Error';
+    modalContent.appendChild(heading);
+
+    // Textarea
+    const textarea = document.createElement('textarea');
+    textarea.id = 'error-message'; // keep existing ID
+    textarea.placeholder = 'Describe the data issue...';
+    textarea.style.width = '100%';
+    textarea.style.height = '100px';
+    textarea.style.marginBottom = '12px';
+    textarea.style.fontSize = '14px';
+    textarea.style.resize = 'vertical';
+
+    modalContent.appendChild(textarea);
+
+    // Submit button
+    const submitBtn = document.createElement('button');
+    submitBtn.id = 'submit-error'; // keep existing ID
+    submitBtn.style.padding = '8px 16px';
+    submitBtn.style.fontSize = '14px';
+    submitBtn.style.cursor = 'pointer';
+    submitBtn.textContent = 'Submit';
+
+    modalContent.appendChild(submitBtn);
+
+    // Success message div
+    const successMsg = document.createElement('div');
+    successMsg.id = 'success-message'; // keep existing ID
+    successMsg.style.color = 'green';
+    successMsg.style.marginTop = '10px';
+    successMsg.style.fontWeight = '600';
+    successMsg.style.display = 'none';
+    successMsg.textContent = 'Thank you! Your report was sent.';
+
+    modalContent.appendChild(successMsg);
+
+    // Error message div (for submission errors)
+    const errorMsg = document.createElement('div');
+    errorMsg.id = 'error-message-display'; // new ID for error display (to avoid conflict with textarea)
+    errorMsg.style.color = 'red';
+    errorMsg.style.marginTop = '10px';
+    errorMsg.style.fontWeight = '600';
+    errorMsg.style.display = 'none';
+    errorMsg.textContent = 'Oops! Something went wrong. Please try again.';
+
+    modalContent.appendChild(errorMsg);
+
+    modalDiv.appendChild(modalContent);
+
+    document.body.appendChild(modalDiv);
+  }
+
 });
