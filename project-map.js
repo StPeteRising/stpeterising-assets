@@ -166,6 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setupLegendToggle();
       addSearchControl();
       injectErrorReportingUI();  // <-- Inject our new styled error reporting UI here
+      setupErrorReportingEvents(); // <-- Setup event handlers for modal open/close/submit
     })
     .catch(err => {
       console.error("Error loading map data:", err);
@@ -396,7 +397,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Create modal HTML
     const modalDiv = document.createElement('div');
     modalDiv.id = 'error-modal'; // keep existing ID
-    modalDiv.style.display = 'none';
     modalDiv.style.position = 'fixed';
     modalDiv.style.zIndex = '9999';
     modalDiv.style.left = '0';
@@ -409,8 +409,7 @@ document.addEventListener("DOMContentLoaded", () => {
     modalDiv.style.display = 'none';
     modalDiv.style.flexDirection = 'column';
     modalDiv.style.cursor = 'default';
-    modalDiv.style.display = 'none';
-    modalDiv.style.cssText += 'display: none;'; // to be safe
+    modalDiv.style.cssText += 'display: none;';
 
     // Inner modal content container
     const modalContent = document.createElement('div');
@@ -488,6 +487,63 @@ document.addEventListener("DOMContentLoaded", () => {
     modalDiv.appendChild(modalContent);
 
     document.body.appendChild(modalDiv);
+  }
+
+  // Setup modal open/close and submit handlers
+  function setupErrorReportingEvents() {
+    const reportLink = document.getElementById('report-error-link');
+    const modal = document.getElementById('error-modal');
+    const closeBtn = document.getElementById('close-modal');
+    const submitBtn = document.getElementById('submit-error');
+    const textarea = document.getElementById('error-message');
+    const successMsg = document.getElementById('success-message');
+    const errorMsg = document.getElementById('error-message-display');
+
+    if (!reportLink || !modal || !closeBtn || !submitBtn || !textarea || !successMsg || !errorMsg) return;
+
+    // Open modal, prevent jump
+    reportLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      successMsg.style.display = 'none';
+      errorMsg.style.display = 'none';
+      textarea.value = '';
+      modal.style.display = 'flex';
+    });
+
+    // Close modal on close button click
+    closeBtn.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    // Close modal if user clicks outside modal content
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+
+    // Submit button logic (for now, just simulate success)
+    submitBtn.addEventListener('click', () => {
+      const message = textarea.value.trim();
+      if (!message) {
+        errorMsg.textContent = 'Please enter a description.';
+        errorMsg.style.display = 'block';
+        successMsg.style.display = 'none';
+        return;
+      }
+
+      // Here you would do your actual submit logic (AJAX/fetch to backend)
+
+      // Simulate async submit with timeout
+      submitBtn.disabled = true;
+      errorMsg.style.display = 'none';
+
+      setTimeout(() => {
+        submitBtn.disabled = false;
+        successMsg.style.display = 'block';
+        textarea.value = '';
+      }, 1000);
+    });
   }
 
 });
