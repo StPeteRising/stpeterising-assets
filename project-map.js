@@ -165,8 +165,8 @@ document.addEventListener("DOMContentLoaded", () => {
       createLegend(iconURLs, statusLayers, markers, activeStatuses);
       setupLegendToggle();
       addSearchControl();
-      injectErrorReportingUI();  // <-- Inject our new styled error reporting UI here
-      setupErrorReportingEvents(); // <-- Setup event handlers for modal open/close/submit
+      injectErrorReportingUI();
+      setupErrorReportingEvents();
     })
     .catch(err => {
       console.error("Error loading map data:", err);
@@ -365,7 +365,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Inject the new styled Report a Data Error link and modal HTML
   function injectErrorReportingUI() {
-    // Insert the link below the map container
     const mapContainer = document.getElementById('project-map');
     if (!mapContainer) return;
 
@@ -375,7 +374,7 @@ document.addEventListener("DOMContentLoaded", () => {
     linkContainer.style.marginBottom = '12px';
     linkContainer.style.fontSize = '14px';
 
-    // Inner flex div with the link (no last updated text for now, but you can add dynamically)
+    // Inner flex div with the link
     const flexDiv = document.createElement('div');
     flexDiv.style.display = 'flex';
     flexDiv.style.justifyContent = 'flex-start'; // left align link only
@@ -396,7 +395,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Create modal HTML
     const modalDiv = document.createElement('div');
-    modalDiv.id = 'error-modal'; // keep existing ID
+    modalDiv.id = 'data-error-modal'; // updated ID
+    modalDiv.style.display = 'none';
     modalDiv.style.position = 'fixed';
     modalDiv.style.zIndex = '9999';
     modalDiv.style.left = '0';
@@ -406,10 +406,8 @@ document.addEventListener("DOMContentLoaded", () => {
     modalDiv.style.background = 'rgba(0,0,0,0.5)';
     modalDiv.style.justifyContent = 'center';
     modalDiv.style.alignItems = 'center';
-    modalDiv.style.display = 'none';
     modalDiv.style.flexDirection = 'column';
     modalDiv.style.cursor = 'default';
-    modalDiv.style.cssText += 'display: none;';
 
     // Inner modal content container
     const modalContent = document.createElement('div');
@@ -424,7 +422,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Close button (×)
     const closeBtn = document.createElement('span');
-    closeBtn.id = 'close-modal'; // keep existing ID
+    closeBtn.id = 'data-error-close'; // updated ID
     closeBtn.style.position = 'absolute';
     closeBtn.style.top = '8px';
     closeBtn.style.right = '12px';
@@ -442,7 +440,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Textarea
     const textarea = document.createElement('textarea');
-    textarea.id = 'error-message'; // keep existing ID
+    textarea.id = 'data-error-message'; // updated ID
     textarea.placeholder = 'Describe the data issue...';
     textarea.style.width = '100%';
     textarea.style.height = '100px';
@@ -454,7 +452,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Submit button
     const submitBtn = document.createElement('button');
-    submitBtn.id = 'submit-error'; // keep existing ID
+    submitBtn.id = 'data-error-submit'; // updated ID
     submitBtn.style.padding = '8px 16px';
     submitBtn.style.fontSize = '14px';
     submitBtn.style.cursor = 'pointer';
@@ -464,7 +462,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Success message div
     const successMsg = document.createElement('div');
-    successMsg.id = 'success-message'; // keep existing ID
+    successMsg.id = 'data-error-success'; // updated ID
     successMsg.style.color = 'green';
     successMsg.style.marginTop = '10px';
     successMsg.style.fontWeight = '600';
@@ -473,9 +471,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     modalContent.appendChild(successMsg);
 
-    // Error message div (for submission errors)
+    // Error message div
     const errorMsg = document.createElement('div');
-    errorMsg.id = 'error-message-display'; // new ID for error display (to avoid conflict with textarea)
+    errorMsg.id = 'data-error-error'; // updated ID
     errorMsg.style.color = 'red';
     errorMsg.style.marginTop = '10px';
     errorMsg.style.fontWeight = '600';
@@ -485,65 +483,60 @@ document.addEventListener("DOMContentLoaded", () => {
     modalContent.appendChild(errorMsg);
 
     modalDiv.appendChild(modalContent);
-
     document.body.appendChild(modalDiv);
   }
 
-  // Setup modal open/close and submit handlers
+  // Setup event listeners for error reporting UI
   function setupErrorReportingEvents() {
     const reportLink = document.getElementById('report-error-link');
-    const modal = document.getElementById('error-modal');
-    const closeBtn = document.getElementById('close-modal');
-    const submitBtn = document.getElementById('submit-error');
-    const textarea = document.getElementById('error-message');
-    const successMsg = document.getElementById('success-message');
-    const errorMsg = document.getElementById('error-message-display');
+    const modal = document.getElementById('data-error-modal');
+    const closeBtn = document.getElementById('data-error-close');
+    const submitBtn = document.getElementById('data-error-submit');
+    const textarea = document.getElementById('data-error-message');
+    const successMsg = document.getElementById('data-error-success');
+    const errorMsg = document.getElementById('data-error-error');
 
     if (!reportLink || !modal || !closeBtn || !submitBtn || !textarea || !successMsg || !errorMsg) return;
 
-    // Open modal, prevent jump
     reportLink.addEventListener('click', (e) => {
       e.preventDefault();
       successMsg.style.display = 'none';
       errorMsg.style.display = 'none';
       textarea.value = '';
       modal.style.display = 'flex';
+      textarea.focus();
     });
 
-    // Close modal on close button click
     closeBtn.addEventListener('click', () => {
       modal.style.display = 'none';
     });
 
-    // Close modal if user clicks outside modal content
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
         modal.style.display = 'none';
       }
     });
 
-    // Submit button logic (for now, just simulate success)
     submitBtn.addEventListener('click', () => {
       const message = textarea.value.trim();
       if (!message) {
-        errorMsg.textContent = 'Please enter a description.';
+        errorMsg.textContent = 'Please enter a description of the data issue.';
         errorMsg.style.display = 'block';
         successMsg.style.display = 'none';
         return;
       }
 
-      // Here you would do your actual submit logic (AJAX/fetch to backend)
-
-      // Simulate async submit with timeout
-      submitBtn.disabled = true;
+      // Hide messages while sending
       errorMsg.style.display = 'none';
+      successMsg.style.display = 'none';
 
+      // Prepare payload for your backend or endpoint here
+      // For now, simulate sending with setTimeout
       setTimeout(() => {
-        submitBtn.disabled = false;
+        // Simulate success
         successMsg.style.display = 'block';
         textarea.value = '';
-      }, 1000);
+      }, 800);
     });
   }
-
 });
