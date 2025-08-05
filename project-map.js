@@ -330,6 +330,7 @@ document.addEventListener("DOMContentLoaded", () => {
               map.once('moveend', () => {
                 const currentCluster = clusterGroup.getVisibleParent(marker);
                 if (currentCluster && currentCluster !== marker) {
+                  // Force spiderfy on the cluster containing the marker
                   clusterGroup.spiderfy(currentCluster);
                   setTimeout(() => {
                     marker.openPopup();
@@ -340,8 +341,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
               });
             } else {
-              map.setView(marker.getLatLng(), 16);
-              marker.openPopup();
+              // Check if marker is inside any cluster at current zoom level and spiderfy if so
+              const visibleParent = clusterGroup.getVisibleParent(marker);
+              if (visibleParent && visibleParent !== marker) {
+                clusterGroup.spiderfy(visibleParent);
+                setTimeout(() => {
+                  marker.openPopup();
+                }, 300);
+              } else {
+                map.setView(marker.getLatLng(), 16);
+                marker.openPopup();
+              }
             }
           });
 
