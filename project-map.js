@@ -316,42 +316,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
           li.innerHTML = `<strong>${proj["Project Name"]}</strong><br/><small>${proj.Address || ''}</small>`;
 
+          // FIXED click handler for shared locations:
           li.addEventListener('click', () => {
             input.value = proj["Project Name"];
             dropdown.style.display = 'none';
 
             const marker = proj.marker;
+            if (!marker) return;
+
             const clusterGroup = markers;
             const parentCluster = clusterGroup.getVisibleParent(marker);
 
             if (parentCluster && parentCluster !== marker) {
+              // If marker is inside a cluster, zoom to cluster bounds
               map.fitBounds(parentCluster.getBounds(), { maxZoom: 18 });
 
               map.once('moveend', () => {
-                const currentCluster = clusterGroup.getVisibleParent(marker);
-                if (currentCluster && currentCluster !== marker) {
-                  // Force spiderfy on the cluster containing the marker
-                  clusterGroup.spiderfy(currentCluster);
-                  setTimeout(() => {
-                    marker.openPopup();
-                  }, 300);
-                } else {
-                  map.setView(marker.getLatLng(), 16);
-                  marker.openPopup();
-                }
-              });
-            } else {
-              // Check if marker is inside any cluster at current zoom level and spiderfy if so
-              const visibleParent = clusterGroup.getVisibleParent(marker);
-              if (visibleParent && visibleParent !== marker) {
-                clusterGroup.spiderfy(visibleParent);
+                // Spiderfy the cluster to spread overlapping markers
+                clusterGroup.spiderfy(parentCluster);
+
+                // Open the popup on the marker after spiderfy animation
                 setTimeout(() => {
                   marker.openPopup();
                 }, 300);
-              } else {
-                map.setView(marker.getLatLng(), 16);
-                marker.openPopup();
-              }
+              });
+            } else {
+              // Marker is not clustered, just zoom to it and open popup
+              map.setView(marker.getLatLng(), 16);
+              marker.openPopup();
             }
           });
 
@@ -493,38 +485,30 @@ document.addEventListener("DOMContentLoaded", () => {
       errorMsg.style.display = 'none';
       successMsg.style.display = 'none';
 
-      const scriptURL = 'https://script.google.com/macros/s/AKfycbwu3EaIFnqf0Idj3CyieOpjw0xtfCcdfs5_GuD2FMH7-VwvXtATO0YUrhCk0VS7mvE/exec';
-
-      // Send URL-encoded form data
-      const formData = new URLSearchParams();
-      formData.append('message', message);
-      formData.append('pageUrl', window.location.href);
+      const scriptURL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec'; // REPLACE with your Google Apps Script URL
 
       fetch(scriptURL, {
         method: 'POST',
+        body: JSON.stringify({ message }),
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-        },
-        body: formData.toString()
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.result === 'success') {
-            successMsg.style.display = 'block';
-            textarea.value = '';
-          } else {
-            errorMsg.textContent = data.error || 'Oops! Something went wrong. Please try again.';
-            errorMsg.style.display = 'block';
-          }
-        })
-        .catch(() => {
-          errorMsg.textContent = 'Oops! Something went wrong. Please try again.';
-          errorMsg.style.display = 'block';
-        })
-        .finally(() => {
-          submitBtn.disabled = false;
+          'Content-Type': 'application/json'
+        }
+      }).then(res => {
+        if (res.ok) {
+          successMsg.style.display = 'block';
+          errorMsg.style.display = 'none';
+          textarea.value = '';
           submitBtn.textContent = 'Submit';
-        });
+          submitBtn.disabled = false;
+        } else {
+          throw new Error('Network response not ok');
+        }
+      }).catch(() => {
+        errorMsg.style.display = 'block';
+        successMsg.style.display = 'none';
+        submitBtn.textContent = 'Submit';
+        submitBtn.disabled = false;
+      });
     });
   }
 });
