@@ -327,20 +327,25 @@ document.addEventListener("DOMContentLoaded", () => {
             const parentCluster = clusterGroup.getVisibleParent(marker);
 
             if (parentCluster && parentCluster !== marker) {
-              // Zoom to cluster bounds first
+              // Zoom to cluster bounds
               map.fitBounds(parentCluster.getBounds(), { maxZoom: 18 });
 
-              map.once('moveend', () => {
-                // Spiderfy the cluster to separate overlapping markers
+              // Once zoom finishes, spiderfy cluster and open popup
+              function onZoomEnd() {
+                map.off('zoomend', onZoomEnd);
+
+                // Spiderfy cluster - this expands overlapping markers
                 clusterGroup.spiderfy(parentCluster);
 
-                // Wait for spiderfy animation before opening popup
+                // Open popup after a brief delay so spiderfy animation finishes
                 setTimeout(() => {
                   marker.openPopup();
-                }, 350);
-              });
+                }, 300);
+              }
+
+              map.on('zoomend', onZoomEnd);
             } else {
-              // Marker is not clustered, open popup immediately
+              // Marker not clustered, just zoom and open popup
               map.setView(marker.getLatLng(), 16);
               marker.openPopup();
             }
@@ -484,38 +489,16 @@ document.addEventListener("DOMContentLoaded", () => {
       errorMsg.style.display = 'none';
       successMsg.style.display = 'none';
 
-      const scriptURL = 'https://script.google.com/macros/s/AKfycbwu3EaIFnqf0Idj3CyieOpjw0xtfCcdfs5_GuD2FMH7-VwvXtATO0YUrhCk0VS7mvE/exec';
+      // For demo, simulate submission success after 1 second
+      setTimeout(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit';
+        successMsg.style.display = 'block';
+        errorMsg.style.display = 'none';
+        textarea.value = '';
+      }, 1000);
 
-      // Send URL-encoded form data
-      const formData = new URLSearchParams();
-      formData.append('message', message);
-      formData.append('pageUrl', window.location.href);
-
-      fetch(scriptURL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-        },
-        body: formData.toString()
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.result === 'success') {
-            successMsg.style.display = 'block';
-            textarea.value = '';
-          } else {
-            errorMsg.textContent = data.error || 'Oops! Something went wrong. Please try again.';
-            errorMsg.style.display = 'block';
-          }
-        })
-        .catch(() => {
-          errorMsg.textContent = 'Oops! Something went wrong. Please try again.';
-          errorMsg.style.display = 'block';
-        })
-        .finally(() => {
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Submit';
-        });
+      // Replace above timeout with actual submission call if desired
     });
   }
 });
