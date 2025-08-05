@@ -167,6 +167,30 @@ document.addEventListener("DOMContentLoaded", () => {
       addSearchControl();
       injectErrorReportingUI();
       setupErrorReportingEvents();
+
+      // Automatically spiderfy clusters with multiple markers at the exact same location on zoomend
+      map.on('zoomend', () => {
+        const zoom = map.getZoom();
+
+        if (zoom >= 16) { // Adjust zoom threshold if needed
+          markers.getClusters().forEach(cluster => {
+            const childMarkers = cluster.getAllChildMarkers();
+
+            if (childMarkers.length <= 1) return; // Not a cluster
+
+            // Check if all markers share identical lat/lng
+            const firstLatLng = childMarkers[0].getLatLng();
+            const allSame = childMarkers.every(m => {
+              const ll = m.getLatLng();
+              return ll.lat === firstLatLng.lat && ll.lng === firstLatLng.lng;
+            });
+
+            if (allSame) {
+              markers.spiderfy(cluster);
+            }
+          });
+        }
+      });
     })
     .catch(err => {
       console.error("Error loading map data:", err);
@@ -487,7 +511,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const scriptURL = 'https://script.google.com/macros/s/AKfycbwu3EaIFnqf0Idj3CyieOpjw0xtfCcdfs5_GuD2FMH7-VwvXtATO0YUrhCk0VS7mvE/exec';
 
-      // Send URL-encoded form data
       const formData = new URLSearchParams();
       formData.append('message', message);
       formData.append('pageUrl', window.location.href);
@@ -499,24 +522,24 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         body: formData.toString()
       })
-        .then(response => response.json())
-        .then(data => {
-          if (data.result === 'success') {
-            successMsg.style.display = 'block';
-            textarea.value = '';
-          } else {
-            errorMsg.textContent = data.error || 'Oops! Something went wrong. Please try again.';
-            errorMsg.style.display = 'block';
-          }
-        })
-        .catch(() => {
-          errorMsg.textContent = 'Oops! Something went wrong. Please try again.';
+      .then(response => response.json())
+      .then(data => {
+        if (data.result === 'success') {
+          successMsg.style.display = 'block';
+          textarea.value = '';
+        } else {
+          errorMsg.textContent = data.error || 'Oops! Something went wrong. Please try again.';
           errorMsg.style.display = 'block';
-        })
-        .finally(() => {
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Submit';
-        });
+        }
+      })
+      .catch(() => {
+        errorMsg.textContent = 'Oops! Something went wrong. Please try again.';
+        errorMsg.style.display = 'block';
+      })
+      .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit';
+      });
     });
   }
 });
