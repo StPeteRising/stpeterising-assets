@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const sheetURL = 'https://opensheet.elk.sh/1e7n0NgW7swUmn6hqCW2KslFgVd3RJhQRiuVSaIY3A1c/Sheet1';
+  const sheetURL = 'https://opensheet.elk.sh/1e7n0NgW7swUmn6hqCW2KslFgVd3RJhQRiuVSaI3A1c/Sheet1';
   const mapboxToken = 'pk.eyJ1Ijoic3RwZXRlcmlzaW5nIiwiYSI6ImNtZDZxb2lweDBib2Mya3BzZ2xrdmgxMDEifQ.QWBg7S51ggQ_jemRmD7nRw';
 
   const iconURLs = {
@@ -167,30 +167,6 @@ document.addEventListener("DOMContentLoaded", () => {
       addSearchControl();
       injectErrorReportingUI();
       setupErrorReportingEvents();
-
-      // Automatically spiderfy clusters with multiple markers at the exact same location on zoomend
-      map.on('zoomend', () => {
-        const zoom = map.getZoom();
-
-        if (zoom >= 16) { // Adjust zoom threshold if needed
-          markers.getClusters().forEach(cluster => {
-            const childMarkers = cluster.getAllChildMarkers();
-
-            if (childMarkers.length <= 1) return; // Not a cluster
-
-            // Check if all markers share identical lat/lng
-            const firstLatLng = childMarkers[0].getLatLng();
-            const allSame = childMarkers.every(m => {
-              const ll = m.getLatLng();
-              return ll.lat === firstLatLng.lat && ll.lng === firstLatLng.lng;
-            });
-
-            if (allSame) {
-              markers.spiderfy(cluster);
-            }
-          });
-        }
-      });
     })
     .catch(err => {
       console.error("Error loading map data:", err);
@@ -347,25 +323,27 @@ document.addEventListener("DOMContentLoaded", () => {
             const marker = proj.marker;
             if (!marker) return;
 
-            const clusterGroup = markers;
-            const parentCluster = clusterGroup.getVisibleParent(marker);
+            // If marker is in a cluster, zoom to cluster and spiderfy if needed before opening popup
+            const parentCluster = markers.getVisibleParent(marker);
 
             if (parentCluster && parentCluster !== marker) {
-              // Zoom to cluster bounds first
               map.fitBounds(parentCluster.getBounds(), { maxZoom: 18 });
 
               function onZoomEnd() {
                 if (map.getZoom() >= 17) {
-                  clusterGroup.spiderfy(parentCluster);
+                  // Spiderfy cluster to show individual markers
+                  markers.spiderfy(parentCluster);
+
+                  // Open the correct marker popup after spiderfy
                   marker.openPopup();
+
                   map.off('zoomend', onZoomEnd);
                 }
               }
 
               map.on('zoomend', onZoomEnd);
-
             } else {
-              // Marker is not clustered, zoom and open popup directly
+              // Marker is not clustered, just zoom and open popup
               map.setView(marker.getLatLng(), 16);
               marker.openPopup();
             }
