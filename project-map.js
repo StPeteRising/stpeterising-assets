@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const sheetURL = 'https://opensheet.elk.sh/1e7n0NgW7swUmn6hqCW2KslFgVd3RJhQRiuVSaI3A1c/Sheet1';
+  const sheetURL = 'https://opensheet.elk.sh/1e7n0NgW7swUmn6hqCW2KslFgVd3RJhQRiuVSaIY3A1c/Sheet1';
   const mapboxToken = 'pk.eyJ1Ijoic3RwZXRlcmlzaW5nIiwiYSI6ImNtZDZxb2lweDBib2Mya3BzZ2xrdmgxMDEifQ.QWBg7S51ggQ_jemRmD7nRw';
 
   const iconURLs = {
@@ -321,29 +321,25 @@ document.addEventListener("DOMContentLoaded", () => {
             dropdown.style.display = 'none';
 
             const marker = proj.marker;
-            if (!marker) return;
-
-            // If marker is in a cluster, zoom to cluster and spiderfy if needed before opening popup
-            const parentCluster = markers.getVisibleParent(marker);
+            const clusterGroup = markers;
+            const parentCluster = clusterGroup.getVisibleParent(marker);
 
             if (parentCluster && parentCluster !== marker) {
               map.fitBounds(parentCluster.getBounds(), { maxZoom: 18 });
 
-              function onZoomEnd() {
-                if (map.getZoom() >= 17) {
-                  // Spiderfy cluster to show individual markers
-                  markers.spiderfy(parentCluster);
-
-                  // Open the correct marker popup after spiderfy
+              map.once('moveend', () => {
+                const currentCluster = clusterGroup.getVisibleParent(marker);
+                if (currentCluster && currentCluster !== marker) {
+                  clusterGroup.spiderfy(currentCluster);
+                  setTimeout(() => {
+                    marker.openPopup();
+                  }, 300);
+                } else {
+                  map.setView(marker.getLatLng(), 16);
                   marker.openPopup();
-
-                  map.off('zoomend', onZoomEnd);
                 }
-              }
-
-              map.on('zoomend', onZoomEnd);
+              });
             } else {
-              // Marker is not clustered, just zoom and open popup
               map.setView(marker.getLatLng(), 16);
               marker.openPopup();
             }
@@ -489,6 +485,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const scriptURL = 'https://script.google.com/macros/s/AKfycbwu3EaIFnqf0Idj3CyieOpjw0xtfCcdfs5_GuD2FMH7-VwvXtATO0YUrhCk0VS7mvE/exec';
 
+      // Send URL-encoded form data
       const formData = new URLSearchParams();
       formData.append('message', message);
       formData.append('pageUrl', window.location.href);
@@ -500,24 +497,24 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         body: formData.toString()
       })
-      .then(response => response.json())
-      .then(data => {
-        if (data.result === 'success') {
-          successMsg.style.display = 'block';
-          textarea.value = '';
-        } else {
-          errorMsg.textContent = data.error || 'Oops! Something went wrong. Please try again.';
+        .then(response => response.json())
+        .then(data => {
+          if (data.result === 'success') {
+            successMsg.style.display = 'block';
+            textarea.value = '';
+          } else {
+            errorMsg.textContent = data.error || 'Oops! Something went wrong. Please try again.';
+            errorMsg.style.display = 'block';
+          }
+        })
+        .catch(() => {
+          errorMsg.textContent = 'Oops! Something went wrong. Please try again.';
           errorMsg.style.display = 'block';
-        }
-      })
-      .catch(() => {
-        errorMsg.textContent = 'Oops! Something went wrong. Please try again.';
-        errorMsg.style.display = 'block';
-      })
-      .finally(() => {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit';
-      });
+        })
+        .finally(() => {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit';
+        });
     });
   }
 });
