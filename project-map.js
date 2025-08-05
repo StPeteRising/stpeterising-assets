@@ -330,18 +330,15 @@ document.addEventListener("DOMContentLoaded", () => {
               // Zoom to cluster bounds first
               map.fitBounds(parentCluster.getBounds(), { maxZoom: 18 });
 
-              // After map movement finishes, spiderfy and open popup
-              function onMoveEnd() {
-                map.off('moveend', onMoveEnd);
-
-                clusterGroup.spiderfy(parentCluster);
-
-                setTimeout(() => {
+              function onZoomEnd() {
+                if (map.getZoom() >= 17) {
+                  clusterGroup.spiderfy(parentCluster);
                   marker.openPopup();
-                }, 300);
+                  map.off('zoomend', onZoomEnd);
+                }
               }
 
-              map.on('moveend', onMoveEnd);
+              map.on('zoomend', onZoomEnd);
 
             } else {
               // Marker is not clustered, zoom and open popup directly
