@@ -316,7 +316,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
           li.innerHTML = `<strong>${proj["Project Name"]}</strong><br/><small>${proj.Address || ''}</small>`;
 
-          // FIXED click handler for shared locations:
           li.addEventListener('click', () => {
             input.value = proj["Project Name"];
             dropdown.style.display = 'none';
@@ -328,20 +327,20 @@ document.addEventListener("DOMContentLoaded", () => {
             const parentCluster = clusterGroup.getVisibleParent(marker);
 
             if (parentCluster && parentCluster !== marker) {
-              // If marker is inside a cluster, zoom to cluster bounds
+              // Zoom to cluster bounds first
               map.fitBounds(parentCluster.getBounds(), { maxZoom: 18 });
 
               map.once('moveend', () => {
-                // Spiderfy the cluster to spread overlapping markers
+                // Spiderfy the cluster to separate overlapping markers
                 clusterGroup.spiderfy(parentCluster);
 
-                // Open the popup on the marker after spiderfy animation
+                // Wait for spiderfy animation before opening popup
                 setTimeout(() => {
                   marker.openPopup();
-                }, 300);
+                }, 350);
               });
             } else {
-              // Marker is not clustered, just zoom to it and open popup
+              // Marker is not clustered, open popup immediately
               map.setView(marker.getLatLng(), 16);
               marker.openPopup();
             }
@@ -485,30 +484,38 @@ document.addEventListener("DOMContentLoaded", () => {
       errorMsg.style.display = 'none';
       successMsg.style.display = 'none';
 
-      const scriptURL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec'; // REPLACE with your Google Apps Script URL
+      const scriptURL = 'https://script.google.com/macros/s/AKfycbwu3EaIFnqf0Idj3CyieOpjw0xtfCcdfs5_GuD2FMH7-VwvXtATO0YUrhCk0VS7mvE/exec';
+
+      // Send URL-encoded form data
+      const formData = new URLSearchParams();
+      formData.append('message', message);
+      formData.append('pageUrl', window.location.href);
 
       fetch(scriptURL, {
         method: 'POST',
-        body: JSON.stringify({ message }),
         headers: {
-          'Content-Type': 'application/json'
-        }
-      }).then(res => {
-        if (res.ok) {
-          successMsg.style.display = 'block';
-          errorMsg.style.display = 'none';
-          textarea.value = '';
-          submitBtn.textContent = 'Submit';
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        },
+        body: formData.toString()
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.result === 'success') {
+            successMsg.style.display = 'block';
+            textarea.value = '';
+          } else {
+            errorMsg.textContent = data.error || 'Oops! Something went wrong. Please try again.';
+            errorMsg.style.display = 'block';
+          }
+        })
+        .catch(() => {
+          errorMsg.textContent = 'Oops! Something went wrong. Please try again.';
+          errorMsg.style.display = 'block';
+        })
+        .finally(() => {
           submitBtn.disabled = false;
-        } else {
-          throw new Error('Network response not ok');
-        }
-      }).catch(() => {
-        errorMsg.style.display = 'block';
-        successMsg.style.display = 'none';
-        submitBtn.textContent = 'Submit';
-        submitBtn.disabled = false;
-      });
+          submitBtn.textContent = 'Submit';
+        });
     });
   }
 });
